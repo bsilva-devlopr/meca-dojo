@@ -1,0 +1,73 @@
+name: meca-dojo
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: meca-dojo-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME:-meca_dojo}
+      POSTGRES_USER: ${DB_USER:-meca_dojo}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-meca_dojo_dev}
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      - meca_dojo_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - meca_dojo_network
+
+  redis:
+    image: redis:7-alpine
+    container_name: meca-dojo-redis
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - meca_dojo_redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - meca_dojo_network
+
+  minio:
+    image: alpine/minio:RELEASE.2025-10-15T17-29-55Z
+    container_name: meca-dojo-minio
+    restart: unless-stopped
+    user: "0:0"
+    command: ["server", "/data", "--console-address", ":9001"]
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ACCESS_KEY:-meca_dojo_minio}
+      MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY:-meca_dojo_minio_dev}
+    ports:
+      - "${MINIO_API_PORT:-9000}:9000"
+      - "${MINIO_CONSOLE_PORT:-9001}:9001"
+    volumes:
+      - meca_dojo_minio_data:/data
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:9000/minio/health/live"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - meca_dojo_network
+
+volumes:
+  meca_dojo_postgres_data:
+    name: meca_dojo_postgres_data
+  meca_dojo_redis_data:
+    name: meca_dojo_redis_data
+  meca_dojo_minio_data:
+    name: meca_dojo_minio_data
+
+networks:
+  meca_dojo_network:
+    name: meca_dojo_network

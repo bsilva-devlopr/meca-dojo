@@ -1,0 +1,12 @@
+# Roadmap
+- Cycle 00 Foundation
+- Cycle 01 Identity
+- Cycle 02 Students
+- Cycle 03 Graduation
+- Cycle 04 Classes
+- Cycle 05 Training
+- Cycle 06 Check-in
+- Cycle 07 Student Experience
+- Cycle 08 Professor Experience
+- Cycle 09 PWA
+- Cycle 10 Pilot
