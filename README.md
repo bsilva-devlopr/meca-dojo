@@ -2,7 +2,7 @@
 
 Meca Dojo e uma plataforma web/mobile-first para gestao de equipes e academias de Jiu-Jitsu.
 
-O Cycle 01 implementa a fundacao funcional de identidade e multi-tenancy: Tenant, Unit, User, RBAC, autenticacao JWT, refresh token opaco rotacionavel e shell autenticado no frontend.
+O Cycle 02 implementa a fundacao de pessoas e gestao de alunos: Student, Guardian, StaffProfile, contatos de emergencia, listagens administrativas e telas iniciais de operacao.
 
 ## Requisitos
 
@@ -144,7 +144,7 @@ npm run build
 - MinIO API: http://localhost:9000
 - MinIO Console: http://localhost:9001
 
-## Endpoints Cycle 01
+## Endpoints principais
 
 - `POST /api/v1/auth/login`
 - `POST /api/v1/auth/refresh`
@@ -162,14 +162,35 @@ npm run build
 - `PATCH /api/v1/users/{id}`
 - `PUT /api/v1/users/{id}/roles`
 - `GET /api/v1/roles`
+- `GET /api/v1/students`
+- `POST /api/v1/students`
+- `GET /api/v1/students/{id}`
+- `PATCH /api/v1/students/{id}`
+- `PUT /api/v1/students/{id}/user`
+- `PUT /api/v1/students/{id}/emergency-contact`
+- `DELETE /api/v1/students/{id}/emergency-contact`
+- `POST /api/v1/students/{id}/guardians`
+- `POST /api/v1/students/{id}/guardians/new`
+- `DELETE /api/v1/students/{studentId}/guardians/{guardianId}`
+- `GET /api/v1/guardians`
+- `POST /api/v1/guardians`
+- `GET /api/v1/guardians/{id}`
+- `PATCH /api/v1/guardians/{id}`
+- `PUT /api/v1/guardians/{id}/user`
+- `GET /api/v1/staff`
+- `POST /api/v1/staff`
+- `GET /api/v1/staff/{id}`
+- `PATCH /api/v1/staff/{id}`
 
 ## RBAC inicial
 
 Roles e permissions sao globais e definidas pelo sistema. Nao existem custom roles no Cycle 01.
 
 - OWNER: todas as permissions atuais.
-- ADMIN: permissions administrativas de Tenant, Unit, User e Role.
-- PROFESSOR, INSTRUCTOR, RECEPTION, STUDENT e GUARDIAN: sem permissions administrativas neste ciclo.
+- ADMIN: permissions administrativas de Tenant, Unit, User, Role, Student, Guardian e Staff.
+- PROFESSOR: leitura de alunos e responsaveis.
+- RECEPTION: leitura/criacao/edicao de alunos e responsaveis.
+- INSTRUCTOR, STUDENT e GUARDIAN: sem permissions administrativas neste ciclo.
 
 ## Encerrar infraestrutura
 

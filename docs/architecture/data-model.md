@@ -13,4 +13,12 @@ Cycle 01 cria a fundacao de Identity e Multi-tenancy:
 - `role_permissions`: relacionamento muitos-para-muitos entre roles e permissions.
 - `refresh_tokens`: refresh tokens opacos, com apenas `token_hash` persistido, expiracao e revogacao.
 
-Entidades futuras como students, professors, guardians, belts, classes, training sessions, check-ins, payments, competitions, CRM e store ainda nao possuem tabelas fisicas.
+Cycle 02 cria People & Student Management:
+
+- `students`: ficha administrativa do aluno. Possui `tenant_id`, `user_id` opcional, `primary_unit_id`, dados pessoais basicos, status, data de inicio e observacoes administrativas.
+- `student_emergency_contacts`: um contato de emergencia principal por aluno.
+- `guardians`: responsaveis, com `user_id` opcional.
+- `guardian_students`: relacionamento N:N entre responsaveis e alunos, com relacionamento e `is_primary`.
+- `staff_profiles`: perfil de negocio de professor/instrutor. `user_id` e obrigatorio e nao substitui roles de autorizacao.
+
+Entidades futuras como belts, graduations, classes, training sessions, check-ins, payments, competitions, CRM e store ainda nao possuem tabelas fisicas.

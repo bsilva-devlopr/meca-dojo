@@ -14,10 +14,15 @@ Cycle 01 implementa:
 - Logs tecnicos de login success, login failure, logout e refresh rotation sem senha, hash ou tokens.
 - CORS restrito por `APP_CORS_ALLOWED_ORIGINS`.
 - Frontend com BFF leve no Next.js e tokens em cookies HttpOnly.
+- Cycle 02 mantem Student, Guardian e Staff tenant-scoped.
+- Referencias para Unit e User em Student/Guardian/Staff sao validadas pelo tenant autenticado.
+- A UI administrativa esconde acoes sem permission, sem substituir a autorizacao server-side.
+- `Student.notes` e administrativo e nao deve ser usado como prontuario medico.
 
 Ainda ficam para ciclos futuros:
 
 - rate limiting em endpoints sensiveis;
 - audit log persistente;
+- prontuario medico;
 - protecao de QR/check-in;
 - device management detalhado para refresh tokens.
