@@ -5,6 +5,8 @@ import java.time.Instant;
 import java.util.stream.Collectors;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -43,6 +45,36 @@ public class GlobalExceptionHandler {
         HttpServletRequest request
     ) {
         return buildResponse(HttpStatus.NOT_FOUND, "Resource not found", request.getRequestURI());
+    }
+
+    @ExceptionHandler(BadRequestException.class)
+    ResponseEntity<ApiErrorResponse> handleBadRequest(BadRequestException exception, HttpServletRequest request) {
+        return buildResponse(HttpStatus.BAD_REQUEST, exception.getMessage(), request.getRequestURI());
+    }
+
+    @ExceptionHandler(UnauthorizedException.class)
+    ResponseEntity<ApiErrorResponse> handleUnauthorized(UnauthorizedException exception, HttpServletRequest request) {
+        return buildResponse(HttpStatus.UNAUTHORIZED, exception.getMessage(), request.getRequestURI());
+    }
+
+    @ExceptionHandler(AuthenticationException.class)
+    ResponseEntity<ApiErrorResponse> handleAuthentication(AuthenticationException exception, HttpServletRequest request) {
+        return buildResponse(HttpStatus.UNAUTHORIZED, "Authentication required", request.getRequestURI());
+    }
+
+    @ExceptionHandler({ForbiddenException.class, AccessDeniedException.class})
+    ResponseEntity<ApiErrorResponse> handleForbidden(Exception exception, HttpServletRequest request) {
+        return buildResponse(HttpStatus.FORBIDDEN, "Forbidden", request.getRequestURI());
+    }
+
+    @ExceptionHandler(NotFoundException.class)
+    ResponseEntity<ApiErrorResponse> handleNotFound(NotFoundException exception, HttpServletRequest request) {
+        return buildResponse(HttpStatus.NOT_FOUND, exception.getMessage(), request.getRequestURI());
+    }
+
+    @ExceptionHandler(ConflictException.class)
+    ResponseEntity<ApiErrorResponse> handleConflict(ConflictException exception, HttpServletRequest request) {
+        return buildResponse(HttpStatus.CONFLICT, exception.getMessage(), request.getRequestURI());
     }
 
     @ExceptionHandler(Exception.class)

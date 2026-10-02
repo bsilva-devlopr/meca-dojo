@@ -17,5 +17,6 @@ public abstract class AbstractPostgreSqlTestcontainer {
         registry.add("spring.datasource.url", POSTGRES::getJdbcUrl);
         registry.add("spring.datasource.username", POSTGRES::getUsername);
         registry.add("spring.datasource.password", POSTGRES::getPassword);
+        registry.add("app.jwt.secret", () -> "test-development-secret-change-me-32-bytes");
     }
 }

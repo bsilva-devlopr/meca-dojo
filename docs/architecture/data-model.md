@@ -1,7 +1,16 @@
-# Data Model - planejado
+# Data Model
 
-Core futuro: tenants, units, users, roles, permissions, user_roles, students, professors, guardians, guardian_students, belts, student_belt_history, classes, class_schedules, class_professors, training_sessions, attendances, announcements, audit_logs.
+Cycle 00 criou `foundation_schema_marker`, uma tabela tecnica minima para validar conexao com PostgreSQL e Flyway.
 
-A implementacao fisica sera criada incrementalmente por migrations durante os ciclos.
+Cycle 01 cria a fundacao de Identity e Multi-tenancy:
 
-No Cycle 00, Flyway cria apenas `foundation_schema_marker`, uma tabela tecnica minima para validar conexao com PostgreSQL e execucao de migrations. Nenhuma tabela de negocio foi antecipada.
+- `tenants`: organizacao/equipe/academia. `slug` e unico globalmente.
+- `units`: unidade fisica de um tenant. `tenant_id` e obrigatorio e `UNIQUE(tenant_id, slug)` impede duplicidade dentro do tenant.
+- `users`: identidade de autenticacao. `tenant_id` e obrigatorio e `UNIQUE(tenant_id, email)` permite o mesmo e-mail em tenants diferentes.
+- `roles`: roles globais fixas do sistema.
+- `permissions`: permissions globais fixas do sistema.
+- `user_roles`: relacionamento muitos-para-muitos entre users e roles.
+- `role_permissions`: relacionamento muitos-para-muitos entre roles e permissions.
+- `refresh_tokens`: refresh tokens opacos, com apenas `token_hash` persistido, expiracao e revogacao.
+
+Entidades futuras como students, professors, guardians, belts, classes, training sessions, check-ins, payments, competitions, CRM e store ainda nao possuem tabelas fisicas.
