@@ -2,7 +2,7 @@
 
 Meca Dojo e uma plataforma web/mobile-first para gestao de equipes e academias de Jiu-Jitsu.
 
-O Cycle 02 implementa a fundacao de pessoas e gestao de alunos: Student, Guardian, StaffProfile, contatos de emergencia, listagens administrativas e telas iniciais de operacao.
+O Cycle 03 implementa graduacao de Jiu-Jitsu: catalogo global de faixas adultas e infantis, historico de graduacao do aluno, promocao de grau/faixa, correcao auditavel, politicas de elegibilidade por tenant e secao de graduacao no perfil do aluno.
 
 ## Requisitos
 
@@ -181,16 +181,27 @@ npm run build
 - `POST /api/v1/staff`
 - `GET /api/v1/staff/{id}`
 - `PATCH /api/v1/staff/{id}`
+- `GET /api/v1/belts`
+- `GET /api/v1/students/{studentId}/graduation`
+- `GET /api/v1/students/{studentId}/graduations`
+- `POST /api/v1/students/{studentId}/graduations/initial`
+- `POST /api/v1/students/{studentId}/graduations/degree`
+- `POST /api/v1/students/{studentId}/graduations/belt`
+- `POST /api/v1/students/{studentId}/graduations/correction`
+- `GET /api/v1/graduation-policies`
+- `PUT /api/v1/graduation-policies/{beltCode}`
 
 ## RBAC inicial
 
 Roles e permissions sao globais e definidas pelo sistema. Nao existem custom roles no Cycle 01.
 
 - OWNER: todas as permissions atuais.
-- ADMIN: permissions administrativas de Tenant, Unit, User, Role, Student, Guardian e Staff.
-- PROFESSOR: leitura de alunos e responsaveis.
+- ADMIN: permissions administrativas de Tenant, Unit, User, Role, Student, Guardian, Staff, Graduation e Graduation Policy.
+- PROFESSOR: leitura de alunos/responsaveis e leitura/criacao de graduacoes.
+- INSTRUCTOR: leitura/criacao de graduacoes.
 - RECEPTION: leitura/criacao/edicao de alunos e responsaveis.
-- INSTRUCTOR, STUDENT e GUARDIAN: sem permissions administrativas neste ciclo.
+- RECEPTION tambem possui leitura de graduacao para operacao.
+- STUDENT e GUARDIAN: sem permissions administrativas neste ciclo.
 
 ## Encerrar infraestrutura
 

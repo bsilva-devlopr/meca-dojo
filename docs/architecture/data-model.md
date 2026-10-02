@@ -21,4 +21,10 @@ Cycle 02 cria People & Student Management:
 - `guardian_students`: relacionamento N:N entre responsaveis e alunos, com relacionamento e `is_primary`.
 - `staff_profiles`: perfil de negocio de professor/instrutor. `user_id` e obrigatorio e nao substitui roles de autorizacao.
 
-Entidades futuras como belts, graduations, classes, training sessions, check-ins, payments, competitions, CRM e store ainda nao possuem tabelas fisicas.
+Cycle 03 cria Belts & Graduation:
+
+- `belts`: catalogo global de faixas, com `code`, `display_name`, `system`, `sequence`, `max_degree` e `active`. `UNIQUE(system, code)` permite `WHITE` em GENERAL e KIDS; `UNIQUE(system, sequence)` garante ordenacao por sistema.
+- `student_graduations`: historico tenant-scoped de eventos de graduacao. Guarda `student_id`, `belt_id`, `degree`, `graduated_at`, `awarded_by_staff_id`, `type`, `created_by_user_id`, `corrects_graduation_id`, `correction_reason` e `created_at`.
+- `graduation_policies`: politica tenant-scoped por faixa, com `minimum_days_in_grade`, `minimum_training_count` preparado para ciclo futuro de frequencia, `active` e `UNIQUE(tenant_id, belt_id)`.
+
+Entidades futuras como classes, training sessions, check-ins, payments, competitions, CRM e store ainda nao possuem tabelas fisicas.

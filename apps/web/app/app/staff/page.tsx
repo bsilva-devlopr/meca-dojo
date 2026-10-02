@@ -1,7 +1,13 @@
-"use client";
+﻿"use client";
 
+import { Badge, StatusBadge } from "@/src/components/ui/Badge";
+import { Button } from "@/src/components/ui/Button";
+import { Card } from "@/src/components/ui/Card";
+import { Input, Select } from "@/src/components/ui/Form";
+import { EmptyState, ErrorState, PageHeader } from "@/src/components/ui/States";
 import { bffJson, hasPermission } from "@/src/lib/people/client";
 import { type PageResponse, type StaffResponse, type StaffStatus, type StaffType, type UnitSummary, type UserSummary } from "@/src/lib/people/types";
+import { Search, UserPlus } from "lucide-react";
 import { type FormEvent, useCallback, useEffect, useState } from "react";
 
 type Me = { permissions: string[] };
@@ -15,6 +21,7 @@ export default function StaffPage() {
   const [status, setStatus] = useState("");
   const [search, setSearch] = useState("");
   const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
 
   const load = useCallback(() => {
     const params = new URLSearchParams({ page: "0", size: "20" });
@@ -31,12 +38,13 @@ export default function StaffPage() {
   }, []);
 
   useEffect(() => {
-    load();
+    void Promise.resolve().then(load);
   }, [load]);
 
   async function create(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError("");
+    setMessage("");
     const form = new FormData(event.currentTarget);
     try {
       await bffJson("/staff", {
@@ -49,6 +57,7 @@ export default function StaffPage() {
         }),
       });
       event.currentTarget.reset();
+      setMessage("Membro da equipe criado.");
       load();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erro ao criar membro da equipe.");
@@ -58,52 +67,47 @@ export default function StaffPage() {
   const canCreate = me ? hasPermission(me.permissions, "STAFF_CREATE") : false;
 
   return (
-    <div className="space-y-5">
-      <h1 className="text-2xl font-semibold text-stone-950">Equipe</h1>
+    <div className="space-y-6">
+      <PageHeader eyebrow="Operacao" title="Equipe" description="Professores e instrutores como perfis de negocio, separados das roles de autorizacao." />
 
-      <div className="grid gap-3 rounded border border-stone-200 bg-white p-4 shadow-sm sm:grid-cols-3">
-        <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Buscar equipe..." className="h-11 rounded border border-stone-300 px-3" />
-        <select value={type} onChange={(e) => setType(e.target.value)} className="h-11 rounded border border-stone-300 px-3">
-          <option value="">Tipo</option>
-          {(["PROFESSOR", "INSTRUCTOR"] satisfies StaffType[]).map((value) => <option key={value}>{value}</option>)}
-        </select>
-        <select value={status} onChange={(e) => setStatus(e.target.value)} className="h-11 rounded border border-stone-300 px-3">
-          <option value="">Status</option>
-          {(["ACTIVE", "INACTIVE"] satisfies StaffStatus[]).map((value) => <option key={value}>{value}</option>)}
-        </select>
-      </div>
+      <Card className="p-4">
+        <div className="grid gap-3 md:grid-cols-[1fr_180px_180px]">
+          <label className="relative"><span className="sr-only">Buscar equipe</span><Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-mutedForeground" aria-hidden="true" /><Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Buscar equipe..." className="pl-9" /></label>
+          <Select value={type} onChange={(e) => setType(e.target.value)} aria-label="Tipo"><option value="">Tipo</option>{(["PROFESSOR", "INSTRUCTOR"] satisfies StaffType[]).map((value) => <option key={value}>{value}</option>)}</Select>
+          <Select value={status} onChange={(e) => setStatus(e.target.value)} aria-label="Status"><option value="">Status</option>{(["ACTIVE", "INACTIVE"] satisfies StaffStatus[]).map((value) => <option key={value}>{value}</option>)}</Select>
+        </div>
+      </Card>
 
-      {error ? <p className="text-sm text-red-700">{error}</p> : null}
+      {error ? <ErrorState message={error} /> : null}
+      {message ? <div className="rounded-lg border border-success/20 bg-success/10 p-3 text-sm font-medium text-success">{message}</div> : null}
 
       {canCreate ? (
-        <form onSubmit={create} className="grid gap-3 rounded border border-stone-200 bg-white p-4 shadow-sm sm:grid-cols-4">
-          <select name="userId" required className="h-11 rounded border border-stone-300 px-3">
-            <option value="">Usuario existente</option>
-            {users.map((user) => <option key={user.id} value={user.id}>{user.name} · {user.email}</option>)}
-          </select>
-          <select name="type" className="h-11 rounded border border-stone-300 px-3">
-            <option>PROFESSOR</option>
-            <option>INSTRUCTOR</option>
-          </select>
-          <input name="displayName" required placeholder="Nome de exibicao" className="h-11 rounded border border-stone-300 px-3" />
-          <select name="primaryUnitId" className="h-11 rounded border border-stone-300 px-3">
-            <option value="">Unidade principal</option>
-            {units.map((unit) => <option key={unit.id} value={unit.id}>{unit.name}</option>)}
-          </select>
-          <button className="rounded bg-stone-950 px-4 py-2 text-sm font-semibold text-white sm:col-span-4">Criar StaffProfile</button>
-        </form>
+        <Card>
+          <form onSubmit={create} className="grid gap-3 lg:grid-cols-4">
+            <Select name="userId" required><option value="">Usuario existente</option>{users.map((user) => <option key={user.id} value={user.id}>{user.name} · {user.email}</option>)}</Select>
+            <Select name="type"><option>PROFESSOR</option><option>INSTRUCTOR</option></Select>
+            <Input name="displayName" required placeholder="Nome de exibicao" />
+            <Select name="primaryUnitId"><option value="">Unidade principal</option>{units.map((unit) => <option key={unit.id} value={unit.id}>{unit.name}</option>)}</Select>
+            <Button className="lg:col-span-4 lg:justify-self-start"><UserPlus className="h-4 w-4" aria-hidden="true" />Criar StaffProfile</Button>
+          </form>
+        </Card>
       ) : null}
 
-      <div className="grid gap-3 sm:grid-cols-2">
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {staff?.content.map((person) => (
-          <div key={person.id} className="rounded border border-stone-200 bg-white p-4 shadow-sm">
-            <p className="font-semibold text-stone-950">{person.displayName}</p>
-            <p className="text-sm text-stone-700">{person.type} · {person.status}</p>
-            <p className="mt-2 text-sm text-stone-600">{person.user.email}</p>
-            <p className="text-sm text-stone-600">{person.primaryUnit?.name ?? "Sem unidade principal"}</p>
-          </div>
+          <Card key={person.id}>
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="font-semibold text-foreground">{person.displayName}</p>
+                <p className="mt-1 text-sm text-mutedForeground">{person.user.email}</p>
+              </div>
+              <StatusBadge status={person.status} />
+            </div>
+            <div className="mt-4 flex flex-wrap gap-2"><Badge tone="primary">{person.type}</Badge><Badge>{person.primaryUnit?.name ?? "Sem unidade"}</Badge></div>
+          </Card>
         ))}
       </div>
+      {staff?.content.length === 0 ? <EmptyState title="Nenhum membro encontrado" description="Ajuste os filtros ou crie um perfil de professor/instrutor usando um usuario existente." /> : null}
     </div>
   );
 }

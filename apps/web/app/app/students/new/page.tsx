@@ -1,9 +1,10 @@
+﻿import { PageHeader } from "@/src/components/ui/States";
 import { StudentForm } from "../StudentForm";
 
 export default function NewStudentPage() {
   return (
-    <div className="space-y-5">
-      <h1 className="text-2xl font-semibold text-stone-950">Novo aluno</h1>
+    <div className="space-y-6">
+      <PageHeader eyebrow="Alunos" title="Novo aluno" description="Cadastre a ficha administrativa do aluno antes de liberar acesso ao sistema." />
       <StudentForm />
     </div>
   );

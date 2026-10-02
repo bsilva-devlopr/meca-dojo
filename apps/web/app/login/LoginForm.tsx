@@ -1,5 +1,9 @@
-"use client";
+﻿"use client";
 
+import { Button } from "@/src/components/ui/Button";
+import { ErrorState } from "@/src/components/ui/States";
+import { FormField, Input } from "@/src/components/ui/Form";
+import { ArrowRight } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
 
@@ -43,49 +47,27 @@ export function LoginForm() {
   }
 
   return (
-    <form onSubmit={submit} className="flex w-full flex-col gap-4">
-      <label className="flex flex-col gap-2 text-sm font-medium text-stone-800">
-        Equipe / Tenant
-        <input
-          name="tenant"
-          autoComplete="organization"
-          className="h-12 rounded border border-stone-300 bg-white px-3 text-base outline-none transition focus:border-stone-900"
-          defaultValue="meca-dojo"
-        />
-      </label>
+    <form onSubmit={submit} className="grid w-full gap-4">
+      <FormField label="Equipe / Tenant" required>
+        <Input name="tenant" autoComplete="organization" defaultValue="meca-dojo" />
+      </FormField>
 
-      <label className="flex flex-col gap-2 text-sm font-medium text-stone-800">
-        E-mail
-        <input
-          name="email"
-          type="email"
-          autoComplete="email"
-          className="h-12 rounded border border-stone-300 bg-white px-3 text-base outline-none transition focus:border-stone-900"
-          defaultValue="admin@mecadojo.local"
-        />
-      </label>
+      <FormField label="E-mail" required>
+        <Input name="email" type="email" autoComplete="email" defaultValue="admin@mecadojo.local" />
+      </FormField>
 
-      <label className="flex flex-col gap-2 text-sm font-medium text-stone-800">
-        Senha
-        <input
-          name="password"
-          type="password"
-          autoComplete="current-password"
-          className="h-12 rounded border border-stone-300 bg-white px-3 text-base outline-none transition focus:border-stone-900"
-        />
-      </label>
+      <FormField label="Senha" required>
+        <Input name="password" type="password" autoComplete="current-password" />
+      </FormField>
 
-      {message ? <p className="text-sm text-red-700">{message}</p> : null}
+      {message ? <ErrorState message={message} /> : null}
 
-      <button
-        type="submit"
-        disabled={state === "loading"}
-        className="mt-2 h-12 rounded bg-stone-950 px-4 text-sm font-semibold uppercase tracking-wide text-white transition hover:bg-stone-800 disabled:cursor-not-allowed disabled:bg-stone-500"
-      >
-        {state === "loading" ? "Entrando..." : "ENTRAR"}
-      </button>
+      <Button type="submit" disabled={state === "loading"} size="lg" className="mt-1 w-full uppercase tracking-[0.16em]">
+        {state === "loading" ? "Entrando..." : "Entrar"}
+        <ArrowRight className="h-4 w-4" aria-hidden="true" />
+      </Button>
 
-      <p className="text-center text-sm text-stone-600">Esqueci minha senha</p>
+      <p className="text-center text-sm text-mutedForeground">Esqueci minha senha</p>
     </form>
   );
 }

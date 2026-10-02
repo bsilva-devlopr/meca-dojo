@@ -1,5 +1,6 @@
-"use client";
+﻿"use client";
 
+import { LoadingState, PageHeader, ErrorState } from "@/src/components/ui/States";
 import { bffJson } from "@/src/lib/people/client";
 import { type StudentResponse } from "@/src/lib/people/types";
 import { useParams } from "next/navigation";
@@ -16,12 +17,12 @@ export default function EditStudentPage() {
   }, [params.id]);
 
   if (!student) {
-    return <p className="text-sm text-stone-600">{error || "Carregando aluno..."}</p>;
+    return error ? <ErrorState message={error} /> : <LoadingState label="Carregando aluno" />;
   }
 
   return (
-    <div className="space-y-5">
-      <h1 className="text-2xl font-semibold text-stone-950">Editar aluno</h1>
+    <div className="space-y-6">
+      <PageHeader eyebrow="Alunos" title="Editar aluno" description={`Atualize os dados administrativos de ${student.fullName}.`} />
       <StudentForm student={student} />
     </div>
   );

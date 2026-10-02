@@ -18,6 +18,11 @@ Cycle 01 implementa:
 - Referencias para Unit e User em Student/Guardian/Staff sao validadas pelo tenant autenticado.
 - A UI administrativa esconde acoes sem permission, sem substituir a autorizacao server-side.
 - `Student.notes` e administrativo e nao deve ser usado como prontuario medico.
+- Cycle 03 mantem graduacoes tenant-scoped. Consultas e comandos carregam Student e StaffProfile pelo tenant autenticado.
+- Correcoes de graduacao exigem `GRADUATION_CORRECT`, motivo obrigatorio e preservam o evento original.
+- `createdByUser` registra quem lancou a graduacao no sistema; `awardedByStaff` registra professor/instrutor responsavel quando informado.
+- Historico de graduacao nao possui endpoint de delecao.
+- Elegibilidade e apenas indicacao para avaliacao; nao existe promocao automatica.
 
 Ainda ficam para ciclos futuros:
 

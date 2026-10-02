@@ -1,10 +1,16 @@
-"use client";
+﻿"use client";
 
+import { Badge, StatusBadge } from "@/src/components/ui/Badge";
+import { Button, ButtonLink } from "@/src/components/ui/Button";
+import { Card, CardHeader } from "@/src/components/ui/Card";
+import { Input, Select } from "@/src/components/ui/Form";
+import { EmptyState, ErrorState, LoadingState, PageHeader } from "@/src/components/ui/States";
 import { bffJson, hasPermission } from "@/src/lib/people/client";
 import { type GuardianRelationship, type StudentResponse } from "@/src/lib/people/types";
-import Link from "next/link";
+import { CalendarDays, Mail, MapPin, Phone, UserRound } from "lucide-react";
 import { useParams } from "next/navigation";
 import { type FormEvent, type ReactNode, useCallback, useEffect, useState } from "react";
+import { GraduationPanel } from "./graduation/GraduationPanel";
 
 type Me = { permissions: string[] };
 
@@ -13,6 +19,7 @@ export default function StudentProfilePage() {
   const [student, setStudent] = useState<StudentResponse | null>(null);
   const [me, setMe] = useState<Me | null>(null);
   const [error, setError] = useState("");
+  const [guardianMessage, setGuardianMessage] = useState("");
 
   const load = useCallback(() => {
     bffJson<StudentResponse>(`/students/${params.id}`).then(setStudent).catch((err: Error) => setError(err.message));
@@ -25,6 +32,8 @@ export default function StudentProfilePage() {
 
   async function addGuardian(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    setError("");
+    setGuardianMessage("");
     const form = new FormData(event.currentTarget);
     try {
       await bffJson(`/students/${params.id}/guardians/new`, {
@@ -38,6 +47,7 @@ export default function StudentProfilePage() {
         }),
       });
       event.currentTarget.reset();
+      setGuardianMessage("Responsavel adicionado.");
       load();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erro ao adicionar responsavel.");
@@ -45,90 +55,113 @@ export default function StudentProfilePage() {
   }
 
   if (!student) {
-    return <p className="text-sm text-stone-600">{error || "Carregando aluno..."}</p>;
+    return error ? <ErrorState message={error} /> : <LoadingState label="Carregando perfil" />;
   }
 
   const canUpdate = me ? hasPermission(me.permissions, "STUDENT_UPDATE") : false;
   const canCreateGuardian = me ? hasPermission(me.permissions, "GUARDIAN_CREATE") : false;
 
   return (
-    <div className="space-y-5">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold text-stone-950">{student.fullName}</h1>
-          <p className="mt-1 text-sm text-stone-600">{student.status} · Aluno desde {student.joinDate}</p>
+    <div className="space-y-6">
+      <PageHeader
+        eyebrow="Perfil do aluno"
+        title={student.fullName}
+        description={`${student.preferredName || "Aluno"} · aluno desde ${formatDate(student.joinDate)} · ${student.primaryUnit.name}`}
+        action={canUpdate ? <ButtonLink href={`/app/students/${student.id}/edit`} variant="secondary">Editar aluno</ButtonLink> : null}
+      />
+
+      {error ? <ErrorState message={error} /> : null}
+
+      <Card className="overflow-hidden bg-foreground p-0 text-white">
+        <div className="grid gap-6 p-6 lg:grid-cols-[1fr_auto] lg:p-8">
+          <div>
+            <div className="flex flex-wrap items-center gap-3"><StatusBadge status={student.status} /><Badge tone="primary">{student.primaryUnit.name}</Badge></div>
+            <h2 className="mt-6 text-4xl font-semibold tracking-tight">{student.fullName}</h2>
+            <p className="mt-2 text-white/62">{student.preferredName || "Sem nome preferido"}</p>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2 lg:w-96">
+            <HeroMetric icon={<CalendarDays className="h-4 w-4" />} label="Desde" value={formatDate(student.joinDate)} />
+            <HeroMetric icon={<MapPin className="h-4 w-4" />} label="Unidade" value={student.primaryUnit.name} />
+          </div>
         </div>
-        {canUpdate ? <Link href={`/app/students/${student.id}/edit`} className="rounded border border-stone-300 px-4 py-2 text-sm font-semibold">Editar</Link> : null}
-      </div>
+      </Card>
 
-      {error ? <p className="text-sm text-red-700">{error}</p> : null}
-
-      <section className="grid gap-4 sm:grid-cols-2">
-        <Panel title="Dados pessoais">
-          <p>Nome preferido: {student.preferredName || "-"}</p>
-          <p>Nascimento: {student.birthDate || "-"}</p>
-        </Panel>
-        <Panel title="Contato">
-          <p>E-mail: {student.email || "-"}</p>
-          <p>Telefone: {student.phone || "-"}</p>
-        </Panel>
-        <Panel title="Unidade">
-          <p>{student.primaryUnit.name}</p>
-        </Panel>
-        <Panel title="Acesso ao sistema">
-          <p>{student.user ? `${student.user.name} · ${student.user.email}` : "Sem usuario vinculado"}</p>
-        </Panel>
+      <section className="grid gap-4 lg:grid-cols-3">
+        <InfoCard title="Dados pessoais" items={[['Nome preferido', student.preferredName || '-'], ['Nascimento', formatDate(student.birthDate)]]} />
+        <InfoCard title="Contato" items={[['E-mail', student.email || '-'], ['Telefone', student.phone || '-']]} />
+        <InfoCard title="Acesso ao sistema" items={[[student.user ? student.user.name : 'Status', student.user ? student.user.email : 'Sem usuario vinculado']]} />
       </section>
 
-      <Panel title="Responsaveis">
-        <div className="space-y-2">
+      {me ? <GraduationPanel studentId={student.id} permissions={me.permissions} /> : null}
+
+      <Card>
+        <CardHeader title="Responsaveis" eyebrow="Familia e contatos" />
+        {guardianMessage ? <div className="mb-4 rounded-lg border border-success/20 bg-success/10 p-3 text-sm font-medium text-success">{guardianMessage}</div> : null}
+        <div className="grid gap-3 md:grid-cols-2">
           {student.guardians.map((guardian) => (
-            <div key={guardian.id} className="rounded border border-stone-200 p-3 text-sm">
-              <p className="font-medium">{guardian.fullName}{guardian.primary ? " · principal" : ""}</p>
-              <p>{guardian.relationship} · {guardian.phone}</p>
+            <div key={guardian.id} className="rounded-2xl border border-border bg-surfaceElevated p-4">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="font-semibold text-foreground">{guardian.fullName}</p>
+                  <p className="mt-1 text-sm text-mutedForeground">{guardian.relationship} · {guardian.phone}</p>
+                </div>
+                {guardian.primary ? <Badge tone="primary">Principal</Badge> : null}
+              </div>
             </div>
           ))}
-          {student.guardians.length === 0 ? <p className="text-sm text-stone-600">Nenhum responsavel vinculado.</p> : null}
         </div>
+        {student.guardians.length === 0 ? <EmptyState title="Nenhum responsavel vinculado" description="Adicione responsaveis quando o aluno precisar de contato familiar ou legal." className="mt-3" /> : null}
+
         {canCreateGuardian ? (
-          <form onSubmit={addGuardian} className="mt-4 grid gap-3 border-t border-stone-200 pt-4 sm:grid-cols-2">
-            <input name="fullName" required placeholder="Nome do responsavel" className="h-11 rounded border border-stone-300 px-3" />
-            <input name="phone" required placeholder="Telefone" className="h-11 rounded border border-stone-300 px-3" />
-            <input name="email" type="email" placeholder="E-mail" className="h-11 rounded border border-stone-300 px-3" />
-            <select name="relationship" className="h-11 rounded border border-stone-300 px-3">
+          <form onSubmit={addGuardian} className="mt-5 grid gap-3 border-t border-border pt-5 md:grid-cols-2">
+            <Input name="fullName" required placeholder="Nome do responsavel" />
+            <Input name="phone" required placeholder="Telefone" />
+            <Input name="email" type="email" placeholder="E-mail" />
+            <Select name="relationship">
               {(["FATHER", "MOTHER", "LEGAL_GUARDIAN", "GRANDPARENT", "OTHER"] satisfies GuardianRelationship[]).map((value) => <option key={value}>{value}</option>)}
-            </select>
-            <label className="flex items-center gap-2 text-sm"><input name="primary" type="checkbox" /> Responsavel principal</label>
-            <button className="rounded bg-stone-950 px-4 py-2 text-sm font-semibold text-white">Adicionar responsavel</button>
+            </Select>
+            <label className="flex items-center gap-2 text-sm text-mutedForeground"><input name="primary" type="checkbox" className="h-4 w-4 accent-primary" /> Responsavel principal</label>
+            <Button className="md:justify-self-start">Adicionar responsavel</Button>
           </form>
         ) : null}
-      </Panel>
+      </Card>
 
-      <Panel title="Contato de emergencia">
-        {student.emergencyContact ? (
-          <p>{student.emergencyContact.name} · {student.emergencyContact.relationship} · {student.emergencyContact.phone}</p>
-        ) : (
-          <p className="text-sm text-stone-600">Nao informado.</p>
-        )}
-      </Panel>
-
-      <Panel title="Observacoes">
-        <p className="whitespace-pre-wrap">{student.notes || "-"}</p>
-      </Panel>
+      <section className="grid gap-4 lg:grid-cols-2">
+        <Card>
+          <CardHeader title="Contato de emergencia" eyebrow="Seguranca" />
+          {student.emergencyContact ? (
+            <div className="space-y-2 text-sm text-mutedForeground">
+              <p className="font-semibold text-foreground">{student.emergencyContact.name}</p>
+              <p>{student.emergencyContact.relationship} · {student.emergencyContact.phone}</p>
+            </div>
+          ) : <p className="text-sm text-mutedForeground">Nao informado.</p>}
+        </Card>
+        <Card>
+          <CardHeader title="Observacoes" eyebrow="Administrativo" />
+          <p className="whitespace-pre-wrap text-sm leading-6 text-mutedForeground">{student.notes || "-"}</p>
+        </Card>
+      </section>
     </div>
   );
 }
 
-function Panel({ title, children }: { title: string; children: ReactNode }) {
-  return (
-    <section className="rounded border border-stone-200 bg-white p-4 shadow-sm">
-      <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-stone-700">{title}</h2>
-      <div className="space-y-1 text-sm text-stone-800">{children}</div>
-    </section>
-  );
+function HeroMetric({ icon, label, value }: { icon: ReactNode; label: string; value: string }) {
+  return <div className="rounded-2xl border border-white/10 bg-white/6 p-4"><div className="flex items-center gap-2 text-white/55">{icon}<span className="text-xs uppercase tracking-[0.16em]">{label}</span></div><p className="mt-2 font-semibold text-white">{value}</p></div>;
+}
+
+function InfoCard({ title, items }: { title: string; items: Array<[string, string]> }) {
+  const icons = [UserRound, Mail, Phone];
+  return <Card><CardHeader title={title} /> <div className="space-y-3">{items.map(([label, value], index) => { const Icon = icons[index] ?? UserRound; return <div key={label} className="flex gap-3"><div className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-primary/10 text-primary"><Icon className="h-4 w-4" aria-hidden="true" /></div><div><p className="caption-text">{label}</p><p className="text-sm font-medium text-foreground">{value}</p></div></div>; })}</div></Card>;
+}
+
+function formatDate(value: string | null) {
+  if (!value) return "-";
+  const [year, month, day] = value.split("-");
+  return `${day}/${month}/${year}`;
 }
 
 function blank(value: FormDataEntryValue | null) {
   const text = String(value ?? "").trim();
   return text ? text : null;
 }
+

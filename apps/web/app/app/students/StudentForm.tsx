@@ -1,7 +1,12 @@
-"use client";
+﻿"use client";
 
+import { Button } from "@/src/components/ui/Button";
+import { Card, CardHeader } from "@/src/components/ui/Card";
+import { FormField, Input, Select, Textarea } from "@/src/components/ui/Form";
+import { ErrorState } from "@/src/components/ui/States";
 import { bffJson } from "@/src/lib/people/client";
 import { type StudentResponse, type StudentStatus, type UnitSummary } from "@/src/lib/people/types";
+import { Save } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
 
@@ -61,48 +66,57 @@ export function StudentForm({ student }: Props) {
   }
 
   return (
-    <form onSubmit={submit} className="space-y-5 rounded border border-stone-200 bg-white p-5 shadow-sm">
-      {error ? <p className="text-sm text-red-700">{error}</p> : null}
-      <div className="grid gap-4 sm:grid-cols-2">
-        <Field name="fullName" label="Nome completo *" defaultValue={student?.fullName} required />
-        <Field name="preferredName" label="Nome preferido" defaultValue={student?.preferredName ?? ""} />
-        <Field name="birthDate" label="Data de nascimento" type="date" defaultValue={student?.birthDate ?? ""} />
-        <Field name="email" label="E-mail" type="email" defaultValue={student?.email ?? ""} />
-        <Field name="phone" label="Telefone" defaultValue={student?.phone ?? ""} />
-        <label className="flex flex-col gap-2 text-sm font-medium text-stone-800">Unidade principal *
-          <select name="primaryUnitId" required defaultValue={student?.primaryUnit.id ?? ""} className="h-11 rounded border border-stone-300 px-3">
-            <option value="">Selecione</option>
-            {units.map((unit) => <option key={unit.id} value={unit.id}>{unit.name}</option>)}
-          </select>
-        </label>
-        <Field name="joinDate" label="Data de inicio *" type="date" defaultValue={student?.joinDate ?? new Date().toISOString().slice(0, 10)} required />
-        <label className="flex flex-col gap-2 text-sm font-medium text-stone-800">Status *
-          <select name="status" defaultValue={student?.status ?? "ACTIVE"} className="h-11 rounded border border-stone-300 px-3">
-            {(["ACTIVE", "TRIAL", "INACTIVE", "SUSPENDED"] satisfies StudentStatus[]).map((value) => <option key={value}>{value}</option>)}
-          </select>
-        </label>
+    <form onSubmit={submit} className="space-y-5">
+      {error ? <ErrorState message={error} /> : null}
+
+      <Card>
+        <CardHeader title="Dados do aluno" eyebrow="Cadastro" >
+          Mantenha apenas dados operacionais. Informacoes medicas terao fluxo proprio.
+        </CardHeader>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <FormField label="Nome completo" required><Input name="fullName" defaultValue={student?.fullName} required /></FormField>
+          <FormField label="Nome preferido"><Input name="preferredName" defaultValue={student?.preferredName ?? ""} /></FormField>
+          <FormField label="Data de nascimento"><Input name="birthDate" type="date" defaultValue={student?.birthDate ?? ""} /></FormField>
+          <FormField label="E-mail"><Input name="email" type="email" defaultValue={student?.email ?? ""} /></FormField>
+          <FormField label="Telefone"><Input name="phone" defaultValue={student?.phone ?? ""} /></FormField>
+          <FormField label="Unidade principal" required>
+            <Select name="primaryUnitId" required defaultValue={student?.primaryUnit.id ?? ""}>
+              <option value="">Selecione</option>
+              {units.map((unit) => <option key={unit.id} value={unit.id}>{unit.name}</option>)}
+            </Select>
+          </FormField>
+          <FormField label="Data de inicio" required><Input name="joinDate" type="date" defaultValue={student?.joinDate ?? new Date().toISOString().slice(0, 10)} required /></FormField>
+          <FormField label="Status" required>
+            <Select name="status" defaultValue={student?.status ?? "ACTIVE"}>
+              {(["ACTIVE", "TRIAL", "INACTIVE", "SUSPENDED"] satisfies StudentStatus[]).map((value) => <option key={value}>{value}</option>)}
+            </Select>
+          </FormField>
+        </div>
+      </Card>
+
+      <Card>
+        <CardHeader title="Contato de emergencia" eyebrow="Seguranca operacional" />
+        <div className="grid gap-4 sm:grid-cols-3">
+          <FormField label="Nome"><Input name="emergencyName" defaultValue={student?.emergencyContact?.name ?? ""} /></FormField>
+          <FormField label="Relacao"><Input name="emergencyRelationship" defaultValue={student?.emergencyContact?.relationship ?? ""} /></FormField>
+          <FormField label="Telefone"><Input name="emergencyPhone" defaultValue={student?.emergencyContact?.phone ?? ""} /></FormField>
+        </div>
+      </Card>
+
+      <Card>
+        <CardHeader title="Observacoes administrativas" eyebrow="Uso interno" />
+        <FormField label="Observacoes" hint="Nao use este campo como prontuario medico.">
+          <Textarea name="notes" defaultValue={student?.notes ?? ""} />
+        </FormField>
+      </Card>
+
+      <div className="flex justify-end">
+        <Button disabled={loading}>
+          <Save className="h-4 w-4" aria-hidden="true" />
+          {loading ? "Salvando..." : "Salvar aluno"}
+        </Button>
       </div>
-
-      <section className="grid gap-4 border-t border-stone-200 pt-4 sm:grid-cols-3">
-        <Field name="emergencyName" label="Contato de emergencia" defaultValue={student?.emergencyContact?.name ?? ""} />
-        <Field name="emergencyRelationship" label="Relacao" defaultValue={student?.emergencyContact?.relationship ?? ""} />
-        <Field name="emergencyPhone" label="Telefone emergencia" defaultValue={student?.emergencyContact?.phone ?? ""} />
-      </section>
-
-      <label className="flex flex-col gap-2 text-sm font-medium text-stone-800">Observacoes administrativas
-        <textarea name="notes" defaultValue={student?.notes ?? ""} className="min-h-28 rounded border border-stone-300 p-3" />
-      </label>
-
-      <button disabled={loading} className="rounded bg-stone-950 px-4 py-2 text-sm font-semibold text-white disabled:bg-stone-500">{loading ? "Salvando..." : "Salvar"}</button>
     </form>
-  );
-}
-
-function Field(props: { name: string; label: string; type?: string; defaultValue?: string; required?: boolean }) {
-  return (
-    <label className="flex flex-col gap-2 text-sm font-medium text-stone-800">{props.label}
-      <input {...props} className="h-11 rounded border border-stone-300 px-3" />
-    </label>
   );
 }
 

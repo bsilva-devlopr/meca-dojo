@@ -12,7 +12,11 @@ User pode existir sem Student. Student e Guardian podem existir sem User. StaffP
 
 Roles como PROFESSOR e STUDENT continuam sendo autorizacao. StaffProfile type PROFESSOR e Student continuam sendo dominio.
 
-Student possui BeltHistory.
+Graduation representa eventos de graduacao do Student. O historico de graduacao e a fonte de verdade: uma graduacao atual e obtida do evento mais recente criado para o aluno dentro do tenant. O sistema suporta graduacao inicial, promocao de grau, promocao de faixa e correcao administrativa.
+
+Belt e catalogo global do sistema, com faixas GENERAL e KIDS. GraduationPolicy e configuracao por tenant para indicar elegibilidade de avaliacao, inicialmente com dias minimos na graduacao e campo preparado para frequencia futura. Elegibilidade nunca promove aluno automaticamente; professor continua tomando a decisao final.
+
+Student sem historico de graduacao e considerado sem graduacao cadastrada, nao faixa branca presumida.
 Class possui schedules e professores.
 TrainingSession representa uma ocorrencia concreta da aula.
 Attendance liga Student a TrainingSession e registra origem/status do check-in.

@@ -63,6 +63,13 @@ class IdentityIntegrationTests extends AbstractPostgreSqlTestcontainer {
 
     @BeforeEach
     void cleanIdentityData() {
+        jdbcTemplate.execute("delete from graduation_policies");
+        jdbcTemplate.execute("delete from student_graduations");
+        jdbcTemplate.execute("delete from guardian_students");
+        jdbcTemplate.execute("delete from student_emergency_contacts");
+        jdbcTemplate.execute("delete from staff_profiles");
+        jdbcTemplate.execute("delete from guardians");
+        jdbcTemplate.execute("delete from students");
         jdbcTemplate.execute("delete from refresh_tokens");
         jdbcTemplate.execute("delete from user_roles");
         jdbcTemplate.execute("delete from users");

@@ -1,5 +1,7 @@
-"use client";
+﻿"use client";
 
+import { Button } from "@/src/components/ui/Button";
+import { LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -15,13 +17,9 @@ export function LogoutButton() {
   }
 
   return (
-    <button
-      type="button"
-      onClick={logout}
-      disabled={loading}
-      className="h-11 rounded border border-stone-300 bg-white px-4 text-sm font-semibold text-stone-950 transition hover:border-stone-950 disabled:cursor-not-allowed disabled:text-stone-500"
-    >
-      Sair
-    </button>
+    <Button type="button" onClick={logout} disabled={loading} variant="secondary" className="w-full border-white/10 bg-white/8 text-white hover:bg-white/12 hover:text-white">
+      <LogOut className="h-4 w-4" aria-hidden="true" />
+      {loading ? "Saindo..." : "Sair"}
+    </Button>
   );
 }

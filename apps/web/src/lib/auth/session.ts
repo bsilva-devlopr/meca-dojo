@@ -3,8 +3,8 @@ import { accessCookieName, authCookieOptions, refreshCookieName, refreshMaxAgeSe
 import { type MeResponse, type TokenResponse } from "@/src/lib/auth/types";
 import { cookies } from "next/headers";
 
-export async function getCurrentUser(): Promise<MeResponse | null> {
-  const response = await authenticatedApiFetch("/api/v1/auth/me");
+export async function getCurrentUser(options: { refresh?: boolean } = {}): Promise<MeResponse | null> {
+  const response = await authenticatedApiFetch("/api/v1/auth/me", {}, options.refresh ?? false);
   if (!response.ok) {
     return null;
   }
