@@ -24,6 +24,8 @@ Cycle 01 implementa:
 - Historico de graduacao nao possui endpoint de delecao.
 - Elegibilidade e apenas indicacao para avaliacao; nao existe promocao automatica.
 
+- Cycle 04 mantem DojoClass e ClassSchedule tenant-scoped. Schedules validam Unit, DojoClass e StaffProfile pelo tenant autenticado. Staff associado a grade precisa estar ativo e ser professor ou instrutor. A autorizacao usa `CLASS_*` e `SCHEDULE_*`; a UI esconde acoes sem permission, mas o backend continua sendo autoridade. Nao ha DELETE fisico de aulas ou horarios.
+
 Ainda ficam para ciclos futuros:
 
 - rate limiting em endpoints sensiveis;

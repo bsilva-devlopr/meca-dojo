@@ -2,7 +2,7 @@
 
 Meca Dojo e uma plataforma web/mobile-first para gestao de equipes e academias de Jiu-Jitsu.
 
-O Cycle 03 implementa graduacao de Jiu-Jitsu: catalogo global de faixas adultas e infantis, historico de graduacao do aluno, promocao de grau/faixa, correcao auditavel, politicas de elegibilidade por tenant e secao de graduacao no perfil do aluno.
+O Cycle 04 implementa o catalogo de aulas e a grade semanal recorrente da academia, com DojoClass, ClassSchedule, professores/assistentes por horario e experiencia administrativa moderna de agenda.
 
 ## Requisitos
 
@@ -190,17 +190,26 @@ npm run build
 - `POST /api/v1/students/{studentId}/graduations/correction`
 - `GET /api/v1/graduation-policies`
 - `PUT /api/v1/graduation-policies/{beltCode}`
+- `GET /api/v1/classes`
+- `POST /api/v1/classes`
+- `GET /api/v1/classes/{id}`
+- `PATCH /api/v1/classes/{id}`
+- `GET /api/v1/schedules`
+- `POST /api/v1/schedules`
+- `GET /api/v1/schedules/weekly`
+- `GET /api/v1/schedules/{id}`
+- `PATCH /api/v1/schedules/{id}`
 
 ## RBAC inicial
 
 Roles e permissions sao globais e definidas pelo sistema. Nao existem custom roles no Cycle 01.
 
 - OWNER: todas as permissions atuais.
-- ADMIN: permissions administrativas de Tenant, Unit, User, Role, Student, Guardian, Staff, Graduation e Graduation Policy.
-- PROFESSOR: leitura de alunos/responsaveis e leitura/criacao de graduacoes.
-- INSTRUCTOR: leitura/criacao de graduacoes.
+- ADMIN: permissions administrativas de Tenant, Unit, User, Role, Student, Guardian, Staff, Graduation, Graduation Policy, Classes e Schedules.
+- PROFESSOR: leitura de alunos/responsaveis, leitura/criacao de graduacoes e leitura de aulas/agenda.
+- INSTRUCTOR: leitura/criacao de graduacoes e leitura de aulas/agenda.
 - RECEPTION: leitura/criacao/edicao de alunos e responsaveis.
-- RECEPTION tambem possui leitura de graduacao para operacao.
+- RECEPTION tambem possui leitura de graduacao, aulas e agenda para operacao.
 - STUDENT e GUARDIAN: sem permissions administrativas neste ciclo.
 
 ## Encerrar infraestrutura

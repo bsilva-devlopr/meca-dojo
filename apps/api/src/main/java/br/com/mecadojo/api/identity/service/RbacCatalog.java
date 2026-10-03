@@ -33,17 +33,27 @@ public final class RbacCatalog {
             PermissionName.GRADUATION_CREATE,
             PermissionName.GRADUATION_CORRECT,
             PermissionName.GRADUATION_POLICY_READ,
-            PermissionName.GRADUATION_POLICY_UPDATE
+            PermissionName.GRADUATION_POLICY_UPDATE,
+            PermissionName.CLASS_READ,
+            PermissionName.CLASS_CREATE,
+            PermissionName.CLASS_UPDATE,
+            PermissionName.SCHEDULE_READ,
+            PermissionName.SCHEDULE_CREATE,
+            PermissionName.SCHEDULE_UPDATE
         ),
         RoleName.PROFESSOR, EnumSet.of(
             PermissionName.STUDENT_READ,
             PermissionName.GUARDIAN_READ,
             PermissionName.GRADUATION_READ,
-            PermissionName.GRADUATION_CREATE
+            PermissionName.GRADUATION_CREATE,
+            PermissionName.CLASS_READ,
+            PermissionName.SCHEDULE_READ
         ),
         RoleName.INSTRUCTOR, EnumSet.of(
             PermissionName.GRADUATION_READ,
-            PermissionName.GRADUATION_CREATE
+            PermissionName.GRADUATION_CREATE,
+            PermissionName.CLASS_READ,
+            PermissionName.SCHEDULE_READ
         ),
         RoleName.RECEPTION, EnumSet.of(
             PermissionName.STUDENT_READ,
@@ -52,7 +62,9 @@ public final class RbacCatalog {
             PermissionName.GUARDIAN_READ,
             PermissionName.GUARDIAN_CREATE,
             PermissionName.GUARDIAN_UPDATE,
-            PermissionName.GRADUATION_READ
+            PermissionName.GRADUATION_READ,
+            PermissionName.CLASS_READ,
+            PermissionName.SCHEDULE_READ
         ),
         RoleName.STUDENT, EnumSet.noneOf(PermissionName.class),
         RoleName.GUARDIAN, EnumSet.noneOf(PermissionName.class)

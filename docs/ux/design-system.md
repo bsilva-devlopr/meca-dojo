@@ -119,3 +119,14 @@ Operacoes devem informar resultado por feedback inline ou componente dedicado. N
 ## Loading e empty states
 
 Preferir skeletons simples e mensagens claras. Empty states devem orientar proxima acao real, sem dizer apenas “Nenhum registro encontrado”.
+
+
+## Schedule experience
+
+A agenda semanal recorrente deve ser a experiencia principal para aulas. No desktop, usar uma grade por dias da semana com cards compactos e legiveis. No mobile, nao comprimir sete colunas: usar seletor horizontal de dias e lista cronologica vertical.
+
+Como Cycle 04 ainda nao possui TrainingSession, nao criar navegacao por semana anterior/proxima nem calendario por data. O texto deve deixar claro que a visualizacao e uma grade semanal recorrente.
+
+Modality badges devem usar texto sempre visivel: Gi, No-Gi, Mista ou Outra. A cor e suporte visual, nunca o unico indicador.
+
+A navegacao mobile deve priorizar poucos destinos. Com o crescimento de modulos, manter itens principais como Inicio, Alunos, Agenda e Mais, em vez de lotar a barra inferior.

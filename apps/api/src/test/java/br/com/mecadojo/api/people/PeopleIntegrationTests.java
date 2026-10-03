@@ -74,6 +74,9 @@ class PeopleIntegrationTests extends AbstractPostgreSqlTestcontainer {
 
     @BeforeEach
     void cleanData() {
+        jdbcTemplate.execute("delete from class_schedule_staff");
+        jdbcTemplate.execute("delete from class_schedules");
+        jdbcTemplate.execute("delete from dojo_classes");
         jdbcTemplate.execute("delete from graduation_policies");
         jdbcTemplate.execute("delete from student_graduations");
         jdbcTemplate.execute("delete from guardian_students");

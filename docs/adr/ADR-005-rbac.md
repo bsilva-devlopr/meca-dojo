@@ -35,14 +35,26 @@ Permissions iniciais:
 - STAFF_READ
 - STAFF_CREATE
 - STAFF_UPDATE
+- GRADUATION_READ
+- GRADUATION_CREATE
+- GRADUATION_CORRECT
+- GRADUATION_POLICY_READ
+- GRADUATION_POLICY_UPDATE
+- CLASS_READ
+- CLASS_CREATE
+- CLASS_UPDATE
+- SCHEDULE_READ
+- SCHEDULE_CREATE
+- SCHEDULE_UPDATE
 
 Mapping atual:
 
 - OWNER possui todas as permissions atuais.
-- ADMIN possui permissions administrativas de Tenant, Unit, User, Role, Student, Guardian e Staff.
-- PROFESSOR possui STUDENT_READ e GUARDIAN_READ.
-- RECEPTION possui leitura, criacao e edicao de Student e Guardian.
-- INSTRUCTOR, STUDENT e GUARDIAN comecam sem permissions administrativas neste ciclo.
+- ADMIN possui permissions administrativas de Tenant, Unit, User, Role, Student, Guardian, Staff, Graduation, Graduation Policy, Classes e Schedules.
+- PROFESSOR possui STUDENT_READ, GUARDIAN_READ, GRADUATION_READ, GRADUATION_CREATE, CLASS_READ e SCHEDULE_READ.
+- INSTRUCTOR possui GRADUATION_READ, GRADUATION_CREATE, CLASS_READ e SCHEDULE_READ.
+- RECEPTION possui leitura, criacao e edicao de Student e Guardian, alem de GRADUATION_READ, CLASS_READ e SCHEDULE_READ.
+- STUDENT e GUARDIAN continuam sem permissions administrativas neste ciclo.
 
 Um usuario pode ter mais de uma role via `user_roles`. Autorizacao em endpoints usa permissions, nao apenas `hasRole`.
 

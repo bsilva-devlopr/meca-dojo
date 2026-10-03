@@ -27,4 +27,10 @@ Cycle 03 cria Belts & Graduation:
 - `student_graduations`: historico tenant-scoped de eventos de graduacao. Guarda `student_id`, `belt_id`, `degree`, `graduated_at`, `awarded_by_staff_id`, `type`, `created_by_user_id`, `corrects_graduation_id`, `correction_reason` e `created_at`.
 - `graduation_policies`: politica tenant-scoped por faixa, com `minimum_days_in_grade`, `minimum_training_count` preparado para ciclo futuro de frequencia, `active` e `UNIQUE(tenant_id, belt_id)`.
 
-Entidades futuras como classes, training sessions, check-ins, payments, competitions, CRM e store ainda nao possuem tabelas fisicas.
+Cycle 04 cria Classes & Schedule:
+
+- `dojo_classes`: catalogo tenant-scoped de aulas/programas oferecidos pela academia. Guarda modalidade, publico, tipo, nivel, status e capacidade padrao opcional.
+- `class_schedules`: grade semanal recorrente tenant-scoped. Liga uma aula a uma unidade, dia da semana, horario de inicio/fim, capacidade especifica opcional e status. `CHECK(end_time > start_time)` impede aulas atravessando meia-noite neste ciclo.
+- `class_schedule_staff`: relacionamento N:N entre horarios e StaffProfile, com papel `LEAD` ou `ASSISTANT`, sem permitir staff duplicado no mesmo horario e com no maximo um `LEAD`.
+
+Entidades futuras como training sessions, check-ins, payments, competitions, CRM e store ainda nao possuem tabelas fisicas.

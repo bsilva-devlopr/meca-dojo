@@ -17,7 +17,10 @@ Graduation representa eventos de graduacao do Student. O historico de graduacao 
 Belt e catalogo global do sistema, com faixas GENERAL e KIDS. GraduationPolicy e configuracao por tenant para indicar elegibilidade de avaliacao, inicialmente com dias minimos na graduacao e campo preparado para frequencia futura. Elegibilidade nunca promove aluno automaticamente; professor continua tomando a decisao final.
 
 Student sem historico de graduacao e considerado sem graduacao cadastrada, nao faixa branca presumida.
-Class possui schedules e professores.
-TrainingSession representa uma ocorrencia concreta da aula.
+DojoClass representa a definicao tenant-scoped de uma aula/programa, como Jiu-Jitsu Adulto, No-Gi Avancado ou Open Mat. O nome evita conflito com `java.lang.Class`.
+
+ClassSchedule representa a recorrencia semanal planejada de uma DojoClass em uma Unit, com dia, horario, capacidade opcional e professores/assistentes. DojoClass nao pertence a Unit; a unidade fica no schedule para permitir a mesma aula em varias unidades.
+
+TrainingSession representa uma ocorrencia concreta da aula em uma data e nao foi implementada no Cycle 04.
 Attendance liga Student a TrainingSession e registra origem/status do check-in.
 AuditLog registra mudancas criticas.
