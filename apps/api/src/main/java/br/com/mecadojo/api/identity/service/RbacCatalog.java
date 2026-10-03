@@ -39,7 +39,13 @@ public final class RbacCatalog {
             PermissionName.CLASS_UPDATE,
             PermissionName.SCHEDULE_READ,
             PermissionName.SCHEDULE_CREATE,
-            PermissionName.SCHEDULE_UPDATE
+            PermissionName.SCHEDULE_UPDATE,
+            PermissionName.TRAINING_SESSION_READ,
+            PermissionName.TRAINING_SESSION_CREATE,
+            PermissionName.TRAINING_SESSION_UPDATE,
+            PermissionName.TRAINING_SESSION_OPEN,
+            PermissionName.TRAINING_SESSION_COMPLETE,
+            PermissionName.TRAINING_SESSION_CANCEL
         ),
         RoleName.PROFESSOR, EnumSet.of(
             PermissionName.STUDENT_READ,
@@ -47,13 +53,22 @@ public final class RbacCatalog {
             PermissionName.GRADUATION_READ,
             PermissionName.GRADUATION_CREATE,
             PermissionName.CLASS_READ,
-            PermissionName.SCHEDULE_READ
+            PermissionName.SCHEDULE_READ,
+            PermissionName.TRAINING_SESSION_READ,
+            PermissionName.TRAINING_SESSION_CREATE,
+            PermissionName.TRAINING_SESSION_UPDATE,
+            PermissionName.TRAINING_SESSION_OPEN,
+            PermissionName.TRAINING_SESSION_COMPLETE,
+            PermissionName.TRAINING_SESSION_CANCEL
         ),
         RoleName.INSTRUCTOR, EnumSet.of(
             PermissionName.GRADUATION_READ,
             PermissionName.GRADUATION_CREATE,
             PermissionName.CLASS_READ,
-            PermissionName.SCHEDULE_READ
+            PermissionName.SCHEDULE_READ,
+            PermissionName.TRAINING_SESSION_READ,
+            PermissionName.TRAINING_SESSION_OPEN,
+            PermissionName.TRAINING_SESSION_COMPLETE
         ),
         RoleName.RECEPTION, EnumSet.of(
             PermissionName.STUDENT_READ,
@@ -64,7 +79,11 @@ public final class RbacCatalog {
             PermissionName.GUARDIAN_UPDATE,
             PermissionName.GRADUATION_READ,
             PermissionName.CLASS_READ,
-            PermissionName.SCHEDULE_READ
+            PermissionName.SCHEDULE_READ,
+            PermissionName.TRAINING_SESSION_READ,
+            PermissionName.TRAINING_SESSION_CREATE,
+            PermissionName.TRAINING_SESSION_UPDATE,
+            PermissionName.TRAINING_SESSION_CANCEL
         ),
         RoleName.STUDENT, EnumSet.noneOf(PermissionName.class),
         RoleName.GUARDIAN, EnumSet.noneOf(PermissionName.class)

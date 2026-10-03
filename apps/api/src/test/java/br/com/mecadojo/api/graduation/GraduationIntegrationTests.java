@@ -59,6 +59,8 @@ class GraduationIntegrationTests extends AbstractPostgreSqlTestcontainer {
 
     @BeforeEach
     void cleanData() {
+        jdbcTemplate.execute("delete from training_session_staff");
+        jdbcTemplate.execute("delete from training_sessions");
         jdbcTemplate.execute("delete from class_schedule_staff");
         jdbcTemplate.execute("delete from class_schedules");
         jdbcTemplate.execute("delete from dojo_classes");
