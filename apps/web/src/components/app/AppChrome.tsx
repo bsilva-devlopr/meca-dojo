@@ -1,18 +1,27 @@
-﻿"use client";
+"use client";
 
+import { LogoutButton } from "@/app/app/LogoutButton";
 import { type MeResponse } from "@/src/lib/auth/types";
 import { cn } from "@/src/lib/utils/cn";
-import { Building2, GraduationCap, LayoutDashboard, MapPin, UsersRound } from "lucide-react";
+import { BookOpen, Building2, CalendarDays, GraduationCap, LayoutDashboard, MapPin, MoreHorizontal, UsersRound } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { type ReactNode } from "react";
-import { LogoutButton } from "@/app/app/LogoutButton";
 
 const navItems = [
   { href: "/app", label: "Dashboard", icon: LayoutDashboard, exact: true },
+  { href: "/app/schedule", label: "Agenda", icon: CalendarDays },
+  { href: "/app/classes", label: "Aulas", icon: BookOpen },
   { href: "/app/students", label: "Alunos", icon: GraduationCap },
   { href: "/app/staff", label: "Equipe", icon: UsersRound },
   { href: "/app/units", label: "Unidades", icon: MapPin },
+];
+
+const mobileNavItems = [
+  { href: "/app", label: "Inicio", icon: LayoutDashboard, exact: true },
+  { href: "/app/students", label: "Alunos", icon: GraduationCap },
+  { href: "/app/schedule", label: "Agenda", icon: CalendarDays },
+  { href: "/app/classes", label: "Mais", icon: MoreHorizontal },
 ];
 
 export function AppChrome({ user, children }: { user: MeResponse; children: ReactNode }) {
@@ -79,7 +88,7 @@ export function AppChrome({ user, children }: { user: MeResponse; children: Reac
 
       <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-surface/95 px-2 py-2 shadow-soft backdrop-blur lg:hidden" aria-label="Navegacao principal mobile">
         <div className="grid grid-cols-4 gap-1">
-          {navItems.map((item) => {
+          {mobileNavItems.map((item) => {
             const active = item.exact ? pathname === item.href : pathname.startsWith(item.href);
             const Icon = item.icon;
             return (
