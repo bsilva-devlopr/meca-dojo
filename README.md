@@ -2,7 +2,7 @@
 
 Meca Dojo e uma plataforma web/mobile-first para gestao de equipes e academias de Jiu-Jitsu.
 
-O Cycle 04 implementa o catalogo de aulas e a grade semanal recorrente da academia, com DojoClass, ClassSchedule, professores/assistentes por horario e experiencia administrativa moderna de agenda.
+O Cycle 05 implementa treinos datados, transformando a grade semanal recorrente em TrainingSessions operacionais com snapshot, professores da sessao, estados explicitos e telas mobile-first para professores.
 
 ## Requisitos
 
@@ -199,6 +199,14 @@ npm run build
 - `GET /api/v1/schedules/weekly`
 - `GET /api/v1/schedules/{id}`
 - `PATCH /api/v1/schedules/{id}`
+- `GET /api/v1/training-sessions`
+- `POST /api/v1/training-sessions`
+- `POST /api/v1/training-sessions/generate`
+- `GET /api/v1/training-sessions/{id}`
+- `PATCH /api/v1/training-sessions/{id}`
+- `POST /api/v1/training-sessions/{id}/open`
+- `POST /api/v1/training-sessions/{id}/complete`
+- `POST /api/v1/training-sessions/{id}/cancel`
 
 ## RBAC inicial
 
@@ -206,10 +214,10 @@ Roles e permissions sao globais e definidas pelo sistema. Nao existem custom rol
 
 - OWNER: todas as permissions atuais.
 - ADMIN: permissions administrativas de Tenant, Unit, User, Role, Student, Guardian, Staff, Graduation, Graduation Policy, Classes e Schedules.
-- PROFESSOR: leitura de alunos/responsaveis, leitura/criacao de graduacoes e leitura de aulas/agenda.
-- INSTRUCTOR: leitura/criacao de graduacoes e leitura de aulas/agenda.
+- PROFESSOR: leitura de alunos/responsaveis, leitura/criacao de graduacoes, leitura de aulas/agenda e administracao operacional de treinos.
+- INSTRUCTOR: leitura/criacao de graduacoes, leitura de aulas/agenda, leitura de treinos, abertura e conclusao.
 - RECEPTION: leitura/criacao/edicao de alunos e responsaveis.
-- RECEPTION tambem possui leitura de graduacao, aulas e agenda para operacao.
+- RECEPTION tambem possui leitura de graduacao, aulas, agenda e treinos, alem de criar/editar/cancelar treinos.
 - STUDENT e GUARDIAN: sem permissions administrativas neste ciclo.
 
 ## Encerrar infraestrutura

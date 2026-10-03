@@ -46,14 +46,20 @@ Permissions iniciais:
 - SCHEDULE_READ
 - SCHEDULE_CREATE
 - SCHEDULE_UPDATE
+- TRAINING_SESSION_READ
+- TRAINING_SESSION_CREATE
+- TRAINING_SESSION_UPDATE
+- TRAINING_SESSION_OPEN
+- TRAINING_SESSION_COMPLETE
+- TRAINING_SESSION_CANCEL
 
 Mapping atual:
 
 - OWNER possui todas as permissions atuais.
-- ADMIN possui permissions administrativas de Tenant, Unit, User, Role, Student, Guardian, Staff, Graduation, Graduation Policy, Classes e Schedules.
-- PROFESSOR possui STUDENT_READ, GUARDIAN_READ, GRADUATION_READ, GRADUATION_CREATE, CLASS_READ e SCHEDULE_READ.
-- INSTRUCTOR possui GRADUATION_READ, GRADUATION_CREATE, CLASS_READ e SCHEDULE_READ.
-- RECEPTION possui leitura, criacao e edicao de Student e Guardian, alem de GRADUATION_READ, CLASS_READ e SCHEDULE_READ.
+- ADMIN possui permissions administrativas de Tenant, Unit, User, Role, Student, Guardian, Staff, Graduation, Graduation Policy, Classes, Schedules e Training Sessions.
+- PROFESSOR possui STUDENT_READ, GUARDIAN_READ, GRADUATION_READ, GRADUATION_CREATE, CLASS_READ, SCHEDULE_READ e todas as permissions de Training Sessions.
+- INSTRUCTOR possui GRADUATION_READ, GRADUATION_CREATE, CLASS_READ, SCHEDULE_READ, TRAINING_SESSION_READ, TRAINING_SESSION_OPEN e TRAINING_SESSION_COMPLETE.
+- RECEPTION possui leitura, criacao e edicao de Student e Guardian, alem de GRADUATION_READ, CLASS_READ, SCHEDULE_READ, TRAINING_SESSION_READ, TRAINING_SESSION_CREATE, TRAINING_SESSION_UPDATE e TRAINING_SESSION_CANCEL.
 - STUDENT e GUARDIAN continuam sem permissions administrativas neste ciclo.
 
 Um usuario pode ter mais de uma role via `user_roles`. Autorizacao em endpoints usa permissions, nao apenas `hasRole`.

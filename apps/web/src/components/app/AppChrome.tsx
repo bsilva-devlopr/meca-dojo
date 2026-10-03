@@ -3,13 +3,14 @@
 import { LogoutButton } from "@/app/app/LogoutButton";
 import { type MeResponse } from "@/src/lib/auth/types";
 import { cn } from "@/src/lib/utils/cn";
-import { BookOpen, Building2, CalendarDays, GraduationCap, LayoutDashboard, MapPin, MoreHorizontal, UsersRound } from "lucide-react";
+import { BookOpen, Building2, CalendarDays, Dumbbell, GraduationCap, LayoutDashboard, MapPin, MoreHorizontal, UsersRound } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { type ReactNode } from "react";
 
 const navItems = [
   { href: "/app", label: "Dashboard", icon: LayoutDashboard, exact: true },
+  { href: "/app/training", label: "Treinos", icon: Dumbbell },
   { href: "/app/schedule", label: "Agenda", icon: CalendarDays },
   { href: "/app/classes", label: "Aulas", icon: BookOpen },
   { href: "/app/students", label: "Alunos", icon: GraduationCap },
@@ -21,7 +22,7 @@ const mobileNavItems = [
   { href: "/app", label: "Inicio", icon: LayoutDashboard, exact: true },
   { href: "/app/students", label: "Alunos", icon: GraduationCap },
   { href: "/app/schedule", label: "Agenda", icon: CalendarDays },
-  { href: "/app/classes", label: "Mais", icon: MoreHorizontal },
+  { href: "/app/training", label: "Mais", icon: MoreHorizontal },
 ];
 
 export function AppChrome({ user, children }: { user: MeResponse; children: ReactNode }) {

@@ -113,8 +113,14 @@ public class ClassScheduleService {
         schedule.setEndTime(end);
         if (request.capacityOverride() != null) schedule.setCapacityOverride(request.capacityOverride());
         if (request.status() != null) schedule.setStatus(request.status());
-        if (request.staff() != null) schedule.replaceStaff(assignments(schedule, request.staff()));
+        if (request.staff() != null) replaceStaff(schedule, assignments(schedule, request.staff()));
         return toResponse(scheduleRepository.save(schedule));
+    }
+
+    private void replaceStaff(ClassSchedule schedule, Set<ClassScheduleStaff> assignments) {
+        schedule.replaceStaff(Set.of());
+        scheduleRepository.flush();
+        schedule.replaceStaff(assignments);
     }
 
     private ClassSchedule load(UUID id) {

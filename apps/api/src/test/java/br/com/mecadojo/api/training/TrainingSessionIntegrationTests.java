@@ -107,6 +107,15 @@ class TrainingSessionIntegrationTests extends AbstractPostgreSqlTestcontainer {
     }
 
     @Test
+    void rejectsGenerationRangeAboveLimit() {
+        Fixture fixture = fixture("range", RoleName.OWNER);
+        String token = login(fixture.tenant().getSlug(), fixture.user().getEmail());
+        LocalDate from = LocalDate.now();
+
+        assertThat(restTemplate.exchange(url("/api/v1/training-sessions/generate"), HttpMethod.POST, bearer(token, Map.of("from", from.toString(), "to", from.plusDays(31).toString())), String.class).getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+    }
+
+    @Test
     void manualSessionHasNoScheduleAndCanBeOpenedCompletedOrCancelledWithReason() {
         Fixture fixture = fixture("manual", RoleName.OWNER);
         String token = login(fixture.tenant().getSlug(), fixture.user().getEmail());
@@ -121,6 +130,7 @@ class TrainingSessionIntegrationTests extends AbstractPostgreSqlTestcontainer {
         TrainingSessionResponse completed = action(token, manual.id(), "complete");
         assertThat(completed.status().name()).isEqualTo("COMPLETED");
         assertThat(restTemplate.exchange(url("/api/v1/training-sessions/" + manual.id() + "/open"), HttpMethod.POST, bearer(token, Map.of()), String.class).getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(restTemplate.exchange(url("/api/v1/training-sessions/" + manual.id() + "/cancel"), HttpMethod.POST, bearer(token, Map.of("reason", "late cancel")), String.class).getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
 
         TrainingSessionResponse cancellable = createManual(token, dojoClass.id(), fixture.unit().getId(), LocalDate.now().plusDays(1), "10:00", "11:00", List.of());
         assertThat(restTemplate.exchange(url("/api/v1/training-sessions/" + cancellable.id() + "/cancel"), HttpMethod.POST, bearer(token, Map.of("reason", " ")), String.class).getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
@@ -129,6 +139,10 @@ class TrainingSessionIntegrationTests extends AbstractPostgreSqlTestcontainer {
         assertThat(cancelled.cancelledAt()).isNotNull();
         assertThat(cancelled.cancelledBy()).isNotNull();
         assertThat(cancelled.cancellationReason()).isEqualTo("Professor indisponivel");
+
+        TrainingSessionResponse openCancellable = action(token, createManual(token, dojoClass.id(), fixture.unit().getId(), LocalDate.now().plusDays(2), "12:00", "13:00", List.of()).id(), "open");
+        TrainingSessionResponse openCancelled = restTemplate.exchange(url("/api/v1/training-sessions/" + openCancellable.id() + "/cancel"), HttpMethod.POST, bearer(token, Map.of("reason", "Unidade fechada")), TrainingSessionResponse.class).getBody();
+        assertThat(openCancelled.status().name()).isEqualTo("CANCELLED");
     }
 
     @Test
@@ -164,6 +178,27 @@ class TrainingSessionIntegrationTests extends AbstractPostgreSqlTestcontainer {
         assertThat(unchanged.staff().getFirst().id()).isEqualTo(original.getId());
         action(token, edited.id(), "open");
         assertThat(restTemplate.exchange(url("/api/v1/training-sessions/" + edited.id()), HttpMethod.PATCH, bearer(token, Map.of("unitId", fixture.unit().getId())), String.class).getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+    }
+
+    @Test
+    void generatedSessionKeepsSnapshotAfterScheduleChanges() {
+        Fixture fixture = fixture("schedule-snapshot", RoleName.OWNER);
+        String token = login(fixture.tenant().getSlug(), fixture.user().getEmail());
+        ClassResponse dojoClass = createClass(token, "Snapshot Adulto", 30);
+        StaffProfile original = staff(fixture, StaffType.PROFESSOR, "Original Snapshot", StaffStatus.ACTIVE);
+        StaffProfile replacement = staff(fixture, StaffType.PROFESSOR, "Replacement Snapshot", StaffStatus.ACTIVE);
+        ScheduleResponse schedule = createSchedule(token, dojoClass.id(), fixture.unit().getId(), "TUESDAY", "20:30", "22:00", 24, List.of(staffReq(original.getId(), "LEAD")));
+        LocalDate from = nextOrSame(java.time.DayOfWeek.MONDAY);
+        generate(token, from, from.plusDays(6), fixture.unit().getId());
+        TrainingSessionResponse before = firstSession(token, from, from.plusDays(6));
+
+        restTemplate.exchange(url("/api/v1/schedules/" + schedule.id()), HttpMethod.PATCH, bearer(token, Map.of("startTime", "21:00", "endTime", "22:30", "capacityOverride", 18, "staff", List.of(staffReq(replacement.getId(), "LEAD")))), ScheduleResponse.class);
+        TrainingSessionResponse after = restTemplate.exchange(url("/api/v1/training-sessions/" + before.id()), HttpMethod.GET, bearer(token), TrainingSessionResponse.class).getBody();
+
+        assertThat(after.startTime().toString()).isEqualTo("20:30");
+        assertThat(after.endTime().toString()).isEqualTo("22:00");
+        assertThat(after.capacity()).isEqualTo(24);
+        assertThat(after.staff().getFirst().id()).isEqualTo(original.getId());
     }
 
     @Test
@@ -211,16 +246,10 @@ class TrainingSessionIntegrationTests extends AbstractPostgreSqlTestcontainer {
     }
 
     private TrainingSessionResponse directSession(Fixture fixture, UUID classId, String start, String end) {
-        String ownerToken = login(fixture.tenant().getSlug(), fixture.user().getEmail());
         Role owner = roleRepository.findByName(RoleName.OWNER).orElseThrow();
-        Role original = roleRepository.findByName(RoleName.INSTRUCTOR).orElseThrow();
-        fixture.user().getRoles().clear();
-        fixture.user().getRoles().add(owner);
-        userRepository.save(fixture.user());
+        User ownerUser = userRepository.save(new User(fixture.tenant(), "Owner " + fixture.tenant().getSlug(), "owner-" + UUID.randomUUID() + "@" + fixture.tenant().getSlug() + ".test", passwordEncoder.encode("secret"), Set.of(owner)));
+        String ownerToken = login(fixture.tenant().getSlug(), ownerUser.getEmail());
         TrainingSessionResponse response = createManual(ownerToken, classId, fixture.unit().getId(), LocalDate.now(), start, end, List.of());
-        fixture.user().getRoles().clear();
-        fixture.user().getRoles().add(original);
-        userRepository.save(fixture.user());
         return response;
     }
 

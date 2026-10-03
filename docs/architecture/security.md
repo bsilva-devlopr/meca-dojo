@@ -25,6 +25,7 @@ Cycle 01 implementa:
 - Elegibilidade e apenas indicacao para avaliacao; nao existe promocao automatica.
 
 - Cycle 04 mantem DojoClass e ClassSchedule tenant-scoped. Schedules validam Unit, DojoClass e StaffProfile pelo tenant autenticado. Staff associado a grade precisa estar ativo e ser professor ou instrutor. A autorizacao usa `CLASS_*` e `SCHEDULE_*`; a UI esconde acoes sem permission, mas o backend continua sendo autoridade. Nao ha DELETE fisico de aulas ou horarios.
+- Cycle 05 mantem TrainingSession tenant-scoped. A criacao manual valida DojoClass, Unit e StaffProfile pelo tenant autenticado. A geracao le apenas ClassSchedule ACTIVE do tenant autenticado. `createdByUser` e `cancelledByUser` vem da autenticacao, nunca do request. A state machine e imposta no backend: `SCHEDULED -> OPEN -> COMPLETED`, com cancelamento permitido somente a partir de `SCHEDULED` ou `OPEN`. Nao ha DELETE fisico de sessoes.
 
 Ainda ficam para ciclos futuros:
 

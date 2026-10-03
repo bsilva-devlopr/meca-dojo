@@ -60,7 +60,7 @@ public class TrainingSessionController {
 
     @PatchMapping("/{id}")
     @PreAuthorize("hasAuthority('TRAINING_SESSION_UPDATE')")
-    TrainingSessionResponse update(@PathVariable UUID id, @RequestBody UpdateTrainingSessionRequest request) { return service.update(id, request); }
+    TrainingSessionResponse update(@PathVariable UUID id, @Valid @RequestBody UpdateTrainingSessionRequest request) { return service.update(id, request); }
 
     @PostMapping("/{id}/open")
     @PreAuthorize("hasAuthority('TRAINING_SESSION_OPEN')")

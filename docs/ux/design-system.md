@@ -125,7 +125,9 @@ Preferir skeletons simples e mensagens claras. Empty states devem orientar proxi
 
 A agenda semanal recorrente deve ser a experiencia principal para aulas. No desktop, usar uma grade por dias da semana com cards compactos e legiveis. No mobile, nao comprimir sete colunas: usar seletor horizontal de dias e lista cronologica vertical.
 
-Como Cycle 04 ainda nao possui TrainingSession, nao criar navegacao por semana anterior/proxima nem calendario por data. O texto deve deixar claro que a visualizacao e uma grade semanal recorrente.
+Com TrainingSession no Cycle 05, `/app/schedule` permanece como grade semanal recorrente e `/app/training` concentra as ocorrencias reais por data. A experiencia de Treinos deve priorizar mobile: data atual, ontem/hoje/amanha, horario, aula, professor, unidade, status textual e acao operacional principal.
+
+Nao usar linguagem tecnica como "materializar recorrencia" na UI. O fluxo administrativo deve dizer "Gerar treinos da grade".
 
 Modality badges devem usar texto sempre visivel: Gi, No-Gi, Mista ou Outra. A cor e suporte visual, nunca o unico indicador.
 

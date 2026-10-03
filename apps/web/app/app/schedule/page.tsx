@@ -85,13 +85,13 @@ export default function SchedulePage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader eyebrow="Agenda" title="Grade semanal" description="Horarios recorrentes da academia. Sessoes reais por data entram no proximo ciclo." action={canCreate ? <a href="#schedule-form" className="focus-ring inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-primary px-4 text-sm font-semibold text-primaryForeground shadow-card transition hover:bg-primary/90"><CalendarPlus className="h-4 w-4" aria-hidden="true" />Adicionar horario</a> : null} />
+      <PageHeader eyebrow="Agenda" title="Grade semanal" description="Horarios recorrentes da academia. Treinos por data ficam na area operacional." action={<div className="flex flex-wrap gap-2"><ButtonLink href="/app/training" variant="secondary">Ver treinos</ButtonLink>{canCreate ? <a href="#schedule-form" className="focus-ring inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-primary px-4 text-sm font-semibold text-primaryForeground shadow-card transition hover:bg-primary/90"><CalendarPlus className="h-4 w-4" aria-hidden="true" />Adicionar horario</a> : null}</div>} />
 
       <Card className="p-4">
         <div className="grid gap-3 md:grid-cols-[1fr_220px] md:items-center">
           <div>
             <p className="caption-text">Recorrencia semanal</p>
-            <p className="mt-1 text-sm text-mutedForeground">Sem navegacao por semanas enquanto ainda nao existem TrainingSessions datadas.</p>
+            <p className="mt-1 text-sm text-mutedForeground">Use esta grade para recorrencia semanal; excecoes e operacao diaria ficam em Treinos.</p>
           </div>
           <Select value={unitId} onChange={(e) => setUnitId(e.target.value)} aria-label="Filtrar unidade"><option value="">Todas as unidades</option>{units.map((unit) => <option key={unit.id} value={unit.id}>{unit.name}</option>)}</Select>
         </div>
@@ -107,7 +107,7 @@ export default function SchedulePage() {
 
       {weekly ? (
         <>
-          <div className="lg:hidden">
+          <div className="xl:hidden">
             <div className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 pb-2" role="tablist" aria-label="Dias da semana">
               {orderedDays.map((day) => <button key={day} type="button" onClick={() => setSelectedDay(day)} className={`focus-ring rounded-full px-4 py-2 text-xs font-bold transition ${selectedDay === day ? "bg-primary text-primaryForeground" : "border border-border bg-surface text-mutedForeground"}`}>{dayShortLabels[day]}</button>)}
             </div>
@@ -118,7 +118,7 @@ export default function SchedulePage() {
             </div>
           </div>
 
-          <div className="hidden gap-3 lg:grid lg:grid-cols-7">
+          <div className="hidden gap-3 xl:grid xl:grid-cols-7">
             {days.map((day) => (
               <section key={day.dayOfWeek} className="min-w-0 rounded-2xl border border-border bg-surface p-3">
                 <h2 className="mb-3 text-sm font-bold uppercase tracking-[0.14em] text-mutedForeground">{dayShortLabels[day.dayOfWeek]}</h2>

@@ -21,6 +21,8 @@ DojoClass representa a definicao tenant-scoped de uma aula/programa, como Jiu-Ji
 
 ClassSchedule representa a recorrencia semanal planejada de uma DojoClass em uma Unit, com dia, horario, capacidade opcional e professores/assistentes. DojoClass nao pertence a Unit; a unidade fica no schedule para permitir a mesma aula em varias unidades.
 
-TrainingSession representa uma ocorrencia concreta da aula em uma data e nao foi implementada no Cycle 04.
+TrainingSession representa uma ocorrencia concreta da aula em uma data especifica. Ela guarda snapshot operacional proprio de aula, unidade, data, horario e capacidade para preservar o historico quando a grade recorrente muda depois. `classSchedule` e opcional para permitir treinos extras ou eventos especiais sem recorrencia semanal.
+
+TrainingSessionStaff representa professores/assistentes daquela sessao especifica. A criacao por schedule copia os responsaveis da grade, mas substituicoes posteriores alteram apenas a sessao.
 Attendance liga Student a TrainingSession e registra origem/status do check-in.
 AuditLog registra mudancas criticas.

@@ -33,4 +33,11 @@ Cycle 04 cria Classes & Schedule:
 - `class_schedules`: grade semanal recorrente tenant-scoped. Liga uma aula a uma unidade, dia da semana, horario de inicio/fim, capacidade especifica opcional e status. `CHECK(end_time > start_time)` impede aulas atravessando meia-noite neste ciclo.
 - `class_schedule_staff`: relacionamento N:N entre horarios e StaffProfile, com papel `LEAD` ou `ASSISTANT`, sem permitir staff duplicado no mesmo horario e com no maximo um `LEAD`.
 
-Entidades futuras como training sessions, check-ins, payments, competitions, CRM e store ainda nao possuem tabelas fisicas.
+Cycle 05 cria Training Sessions:
+
+- `training_sessions`: ocorrencia real tenant-scoped de treino, com `dojo_class_id`, `class_schedule_id` opcional, `unit_id`, `session_date`, `start_time`, `end_time`, `status`, `capacity`, `notes`, `created_by_user_id` e metadados de cancelamento.
+- `training_session_staff`: relacionamento N:N entre sessao e StaffProfile, com papel `LEAD` ou `ASSISTANT`, staff duplicado bloqueado e no maximo um `LEAD`.
+
+`training_sessions` usa `UNIQUE(class_schedule_id, session_date) WHERE class_schedule_id IS NOT NULL` para tornar a geracao idempotente sem bloquear sessoes manuais.
+
+Entidades futuras como check-ins, payments, competitions, CRM e store ainda nao possuem tabelas fisicas.

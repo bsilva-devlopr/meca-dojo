@@ -17,7 +17,6 @@ import br.com.mecadojo.api.schedule.repository.ClassScheduleRepository;
 import br.com.mecadojo.api.schedule.service.DojoClassService;
 import br.com.mecadojo.api.schedule.api.dto.ScheduleDtos.ClassResponse;
 import br.com.mecadojo.api.shared.exception.BadRequestException;
-import br.com.mecadojo.api.shared.exception.ConflictException;
 import br.com.mecadojo.api.shared.exception.NotFoundException;
 import br.com.mecadojo.api.training.api.dto.TrainingSessionDtos.*;
 import br.com.mecadojo.api.training.domain.*;
@@ -128,8 +127,14 @@ public class TrainingSessionService {
         if (request.sessionDate() != null) session.setSessionDate(request.sessionDate());
         if (request.capacity() != null) session.setCapacity(request.capacity());
         if (request.notes() != null) session.setNotes(blankToNull(request.notes()));
-        if (request.staff() != null) session.replaceStaff(assignments(session, request.staff()));
+        if (request.staff() != null) replaceStaff(session, assignments(session, request.staff()));
         return toResponse(repository.save(session));
+    }
+
+    private void replaceStaff(TrainingSession session, Set<TrainingSessionStaff> assignments) {
+        session.replaceStaff(Set.of());
+        repository.flush();
+        session.replaceStaff(assignments);
     }
 
     @Transactional
