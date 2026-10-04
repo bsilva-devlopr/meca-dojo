@@ -82,13 +82,13 @@ A API usa PostgreSQL via variaveis `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER` e 
 Para login local inicial, configure tambem:
 
 ```powershell
-$env:JWT_SECRET="local-development-secret-change-me-please-32-bytes"
+$env:JWT_SECRET="<at-least-32-characters-local-secret>"
 $env:BOOTSTRAP_ENABLED="true"
 $env:BOOTSTRAP_TENANT_NAME="Meca Dojo"
 $env:BOOTSTRAP_TENANT_SLUG="meca-dojo"
 $env:BOOTSTRAP_OWNER_NAME="Admin Local"
 $env:BOOTSTRAP_OWNER_EMAIL="admin@mecadojo.local"
-$env:BOOTSTRAP_OWNER_PASSWORD="local-dev-password"
+$env:BOOTSTRAP_OWNER_PASSWORD="<local-owner-password>"
 ```
 
 O bootstrap e idempotente e deve ser usado apenas em desenvolvimento/local. Em producao, `JWT_SECRET` deve vir do ambiente e ter pelo menos 32 caracteres.
@@ -101,7 +101,7 @@ npm install
 npm run dev
 ```
 
-A URL da API vem de `NEXT_PUBLIC_API_URL`, com default documentado em `.env.example`.
+A URL da API usada pelo BFF vem de `API_BASE_URL`, com fallback local documentado em `.env.example`. `NEXT_PUBLIC_APP_URL` representa a URL publica do frontend quando alguma experiencia precisa conhecer a origem publica da aplicacao.
 
 ## Testar backend
 
@@ -255,3 +255,32 @@ Permissions adicionadas:
 - `CHECKIN_AUDIT_READ`
 
 Self check-in nao usa permission administrativa; exige usuario autenticado, Student vinculado, token valido, TrainingSession OPEN e Student ACTIVE/TRIAL.
+
+## Deployment
+
+Cycle 06.1 define a fundacao de staging:
+
+```text
+Vercel (Next.js + BFF)
+  -> HTTPS
+Spring Boot API em runtime Java/container
+  -> PostgreSQL gerenciado
+```
+
+O backend nao roda em Vercel Functions. Ele e empacotado como imagem Docker em `apps/api/Dockerfile` e deve rodar em runtime apropriado para Java 21/Spring Boot.
+
+Documentacao operacional:
+
+- `docs/deployment/architecture.md`
+- `docs/deployment/environments.md`
+- `docs/deployment/vercel.md`
+- `docs/deployment/backend-host.md`
+- `docs/deployment/staging-runbook.md`
+- `docs/adr/ADR-012-production-deployment.md`
+
+Variaveis principais:
+
+- API: `SPRING_PROFILES_ACTIVE`, `PORT`, `JDBC_DATABASE_URL` ou `DATABASE_URL`, `DATABASE_USERNAME`, `DATABASE_PASSWORD`, `JWT_SECRET`, `APP_CORS_ALLOWED_ORIGINS`, `APP_PUBLIC_URL`, `BOOTSTRAP_ENABLED`.
+- Web: `API_BASE_URL`, `NEXT_PUBLIC_APP_URL`.
+
+Use `apps/api/.env.example` e `apps/web/.env.example` como templates. Nao versionar `.env` real, tokens de provider, senhas, JWT secrets ou URLs com credenciais.

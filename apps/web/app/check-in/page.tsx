@@ -7,7 +7,7 @@ import { ErrorState, LoadingState } from "@/src/components/ui/States";
 import { type SelfCheckInResponse } from "@/src/lib/attendance";
 import { bffJson } from "@/src/lib/people/client";
 import { CheckCircle2, Clock, Dumbbell, RotateCcw, ShieldAlert } from "lucide-react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 
 export default function CheckInPage() {
@@ -16,6 +16,7 @@ export default function CheckInPage() {
 
 function CheckInContent() {
   const params = useSearchParams();
+  const router = useRouter();
   const token = params.get("token") ?? "";
   const [result, setResult] = useState<SelfCheckInResponse | null>(null);
   const [error, setError] = useState("");
@@ -27,7 +28,7 @@ function CheckInContent() {
       if (!token) { setError("QR invalido ou ausente."); setLoading(false); return; }
       const me = await fetch("/api/auth/me");
       if (me.status === 401) {
-        window.location.href = `/login?returnTo=${encodeURIComponent(`/check-in?token=${token}`)}`;
+        router.replace(`/login?returnTo=${encodeURIComponent(`/check-in?token=${token}`)}`);
         return;
       }
       try {
@@ -41,7 +42,7 @@ function CheckInContent() {
     }
     void run();
     return () => { active = false; };
-  }, [token]);
+  }, [router, token]);
 
   if (loading) return <Shell><LoadingState label="Validando check-in" /></Shell>;
   if (error) return <Shell><ErrorState message={error} /><ButtonLink href="/app" variant="secondary">Voltar ao app</ButtonLink></Shell>;

@@ -47,3 +47,10 @@ Ainda ficam para ciclos futuros:
 - VOID nao apaga presenca; registra motivo, usuario e timestamp.
 - `recordedByUserId`, `createdByUserId` e `voidedByUserId` vêm da autenticacao.
 - Nao ha DELETE fisico de Attendance ou CheckIn exposto pela API.
+## Deployment security
+
+Cycle 06.1 mantem o browser falando com o BFF do Next.js. `API_BASE_URL` e privado do servidor Next.js; secrets nao devem usar prefixo `NEXT_PUBLIC_`.
+
+Cookies de access/refresh token continuam `HttpOnly`, `SameSite=Lax` e `Secure` em build de producao. O backend aceita CORS apenas para origens explicitas em `APP_CORS_ALLOWED_ORIGINS` e falha a inicializacao se `*` for configurado junto com credenciais.
+
+Bootstrap fica desabilitado por padrao (`BOOTSTRAP_ENABLED=false`) fora de execucao local/one-time. Flyway continua habilitado para validate/migrate, com clean desabilitado. O backend aceita `PORT` de cloud runtime e URLs de PostgreSQL gerenciado sem commitar credenciais.

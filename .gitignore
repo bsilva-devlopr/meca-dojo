@@ -5,6 +5,7 @@
 .env.local
 .env.*
 !.env.example
+!**/.env.example
 target/
 **/target/
 node_modules/
