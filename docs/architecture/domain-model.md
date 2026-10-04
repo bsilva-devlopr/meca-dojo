@@ -26,3 +26,13 @@ TrainingSession representa uma ocorrencia concreta da aula em uma data especific
 TrainingSessionStaff representa professores/assistentes daquela sessao especifica. A criacao por schedule copia os responsaveis da grade, mas substituicoes posteriores alteram apenas a sessao.
 Attendance liga Student a TrainingSession e registra origem/status do check-in.
 AuditLog registra mudancas criticas.
+
+## Attendance & Check-in
+
+`Attendance` representa a presenca oficial e e a fonte de verdade para frequencia. Conta apenas quando `status = ACTIVE`. `VOIDED` preserva auditoria de correcoes operacionais e permite registrar uma nova presenca ACTIVE para o mesmo aluno e sessao.
+
+`CheckIn` representa a tentativa operacional, nao a frequencia. Um QR expirado, uma tentativa duplicada ou uma conta sem Student vinculado gera CheckIn auditavel sem criar Attendance.
+
+Self check-in resolve `User -> Student` no backend. O navegador envia apenas o token opaco do QR; nunca escolhe `studentId` nesse fluxo. Student ACTIVE e TRIAL podem treinar; INACTIVE e SUSPENDED sao rejeitados.
+
+Attendance pode ser registrada enquanto a TrainingSession esta OPEN. A contagem aparece imediatamente no historico e resumo do aluno, mesmo antes da sessao ser COMPLETED. Sessoes SCHEDULED, COMPLETED e CANCELLED nao aceitam novas presencas.

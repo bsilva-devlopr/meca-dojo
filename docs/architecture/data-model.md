@@ -41,3 +41,11 @@ Cycle 05 cria Training Sessions:
 `training_sessions` usa `UNIQUE(class_schedule_id, session_date) WHERE class_schedule_id IS NOT NULL` para tornar a geracao idempotente sem bloquear sessoes manuais.
 
 Entidades futuras como check-ins, payments, competitions, CRM e store ainda nao possuem tabelas fisicas.
+
+Cycle 06 cria Attendance & Check-in:
+
+- `attendances`: presenca oficial tenant-scoped de um Student em uma TrainingSession. Guarda source, status `ACTIVE`/`VOIDED`, `checked_in_at`, `recorded_by_user_id`, `check_in_id` opcional e metadados de correcao (`voided_at`, `voided_by_user_id`, `void_reason`). Um indice unico parcial garante apenas uma presenca `ACTIVE` por `(training_session_id, student_id)`.
+- `check_in_tokens`: tokens opacos temporarios para QR. O banco persiste apenas `token_hash`, com expiracao, sessao, tenant e criador.
+- `check_ins`: tentativas auditaveis de check-in por QR, com status aceito, duplicado, expirado, invalido, sessao fechada, aluno invalido ou usuario sem aluno vinculado.
+
+Attendance `VOIDED` permanece auditavel, mas nao conta em frequencia, resumo do aluno ou elegibilidade de graduacao.

@@ -231,3 +231,27 @@ Atalho em PowerShell:
 ```powershell
 .\scripts\dev-down.ps1
 ```
+
+## Cycle 06 - Attendance & Check-in
+
+Cycle 06 adiciona presenca oficial em TrainingSession e check-in por QR temporario. `Attendance` e a fonte de verdade de frequencia; `CheckIn` registra tentativas operacionais, inclusive duplicadas, expiradas ou rejeitadas.
+
+Endpoints adicionados:
+
+- `GET /api/v1/training-sessions/{sessionId}/attendance`
+- `POST /api/v1/training-sessions/{sessionId}/attendance`
+- `POST /api/v1/training-sessions/{sessionId}/check-in-token`
+- `POST /api/v1/check-ins`
+- `POST /api/v1/attendance/{id}/void`
+- `GET /api/v1/students/{studentId}/attendance`
+- `GET /api/v1/students/{studentId}/attendance/summary`
+
+Permissions adicionadas:
+
+- `ATTENDANCE_READ`
+- `ATTENDANCE_CREATE`
+- `ATTENDANCE_VOID`
+- `CHECKIN_TOKEN_CREATE`
+- `CHECKIN_AUDIT_READ`
+
+Self check-in nao usa permission administrativa; exige usuario autenticado, Student vinculado, token valido, TrainingSession OPEN e Student ACTIVE/TRIAL.

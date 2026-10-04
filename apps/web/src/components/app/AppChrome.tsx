@@ -29,7 +29,7 @@ export function AppChrome({ user, children }: { user: MeResponse; children: Reac
   const pathname = usePathname();
 
   return (
-    <main className="min-h-screen bg-background text-foreground">
+    <main className="min-h-screen overflow-x-hidden bg-background text-foreground">
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-72 border-r border-border bg-foreground text-white lg:flex lg:flex-col">
         <div className="p-6">
           <div className="flex items-center gap-3">
@@ -84,7 +84,7 @@ export function AppChrome({ user, children }: { user: MeResponse; children: Reac
           </div>
         </header>
 
-        <section className="mx-auto max-w-7xl px-4 pb-28 pt-6 sm:px-6 lg:px-8 lg:pb-10">{children}</section>
+        <section className="mx-auto max-w-7xl overflow-x-hidden px-4 pb-28 pt-6 sm:px-6 lg:px-8 lg:pb-10">{children}</section>
       </div>
 
       <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-surface/95 px-2 py-2 shadow-soft backdrop-blur lg:hidden" aria-label="Navegacao principal mobile">

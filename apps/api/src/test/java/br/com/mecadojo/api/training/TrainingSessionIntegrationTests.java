@@ -62,6 +62,11 @@ class TrainingSessionIntegrationTests extends AbstractPostgreSqlTestcontainer {
 
     @BeforeEach
     void cleanData() {
+        jdbcTemplate.execute("update check_ins set attendance_id = null");
+        jdbcTemplate.execute("update attendances set check_in_id = null");
+        jdbcTemplate.execute("delete from attendances");
+        jdbcTemplate.execute("delete from check_ins");
+        jdbcTemplate.execute("delete from check_in_tokens");
         jdbcTemplate.execute("delete from training_session_staff");
         jdbcTemplate.execute("delete from training_sessions");
         jdbcTemplate.execute("delete from class_schedule_staff");
@@ -327,3 +332,4 @@ class TrainingSessionIntegrationTests extends AbstractPostgreSqlTestcontainer {
     private String url(String path) { return "http://localhost:" + port + path; }
     private record Fixture(Tenant tenant, Unit unit, User user) {}
 }
+

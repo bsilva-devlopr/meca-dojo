@@ -1,5 +1,7 @@
 package br.com.mecadojo.api.graduation.service;
 
+import br.com.mecadojo.api.attendance.domain.AttendanceStatus;
+import br.com.mecadojo.api.attendance.repository.AttendanceRepository;
 import br.com.mecadojo.api.graduation.api.dto.GraduationDtos.EligibilityResponse;
 import br.com.mecadojo.api.graduation.domain.GraduationPolicy;
 import br.com.mecadojo.api.graduation.domain.StudentGraduation;
@@ -13,9 +15,11 @@ import org.springframework.stereotype.Service;
 @Service
 public class GraduationEligibilityService {
     private final GraduationPolicyRepository policyRepository;
+    private final AttendanceRepository attendanceRepository;
 
-    public GraduationEligibilityService(GraduationPolicyRepository policyRepository) {
+    public GraduationEligibilityService(GraduationPolicyRepository policyRepository, AttendanceRepository attendanceRepository) {
         this.policyRepository = policyRepository;
+        this.attendanceRepository = attendanceRepository;
     }
 
     public EligibilityResponse evaluate(StudentGraduation current) {
@@ -44,7 +48,10 @@ public class GraduationEligibilityService {
             }
         }
         if (policy.getMinimumTrainingCount() != null) {
-            warnings.add("Criterio de frequencia ainda nao disponivel neste ciclo");
+            long trainings = attendanceRepository.countByTenantIdAndStudentIdAndStatus(CurrentUser.get().tenantId(), current.getStudent().getId(), AttendanceStatus.ACTIVE);
+            if (trainings < policy.getMinimumTrainingCount()) {
+                reasons.add("Quantidade minima de treinos ainda nao atingida");
+            }
         }
         return new EligibilityResponse(reasons.isEmpty(), reasons, warnings);
     }

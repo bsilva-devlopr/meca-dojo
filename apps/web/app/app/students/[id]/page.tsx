@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { Badge, StatusBadge } from "@/src/components/ui/Badge";
 import { Button, ButtonLink } from "@/src/components/ui/Button";
@@ -6,6 +6,7 @@ import { Card, CardHeader } from "@/src/components/ui/Card";
 import { Input, Select } from "@/src/components/ui/Form";
 import { EmptyState, ErrorState, LoadingState, PageHeader } from "@/src/components/ui/States";
 import { bffJson, hasPermission } from "@/src/lib/people/client";
+import { type StudentAttendanceHistoryItem, type StudentAttendanceSummary } from "@/src/lib/attendance";
 import { type GuardianRelationship, type StudentResponse } from "@/src/lib/people/types";
 import { CalendarDays, Mail, MapPin, Phone, UserRound } from "lucide-react";
 import { useParams } from "next/navigation";
@@ -19,10 +20,14 @@ export default function StudentProfilePage() {
   const [student, setStudent] = useState<StudentResponse | null>(null);
   const [me, setMe] = useState<Me | null>(null);
   const [error, setError] = useState("");
+  const [attendanceSummary, setAttendanceSummary] = useState<StudentAttendanceSummary | null>(null);
+  const [attendanceHistory, setAttendanceHistory] = useState<StudentAttendanceHistoryItem[]>([]);
   const [guardianMessage, setGuardianMessage] = useState("");
 
   const load = useCallback(() => {
     bffJson<StudentResponse>(`/students/${params.id}`).then(setStudent).catch((err: Error) => setError(err.message));
+    bffJson<StudentAttendanceSummary>(`/students/${params.id}/attendance/summary`).then(setAttendanceSummary).catch(() => undefined);
+    bffJson<StudentAttendanceHistoryItem[]>(`/students/${params.id}/attendance`).then(setAttendanceHistory).catch(() => undefined);
   }, [params.id]);
 
   useEffect(() => {
@@ -66,7 +71,7 @@ export default function StudentProfilePage() {
       <PageHeader
         eyebrow="Perfil do aluno"
         title={student.fullName}
-        description={`${student.preferredName || "Aluno"} · aluno desde ${formatDate(student.joinDate)} · ${student.primaryUnit.name}`}
+        description={`${student.preferredName || "Aluno"} Â· aluno desde ${formatDate(student.joinDate)} Â· ${student.primaryUnit.name}`}
         action={canUpdate ? <ButtonLink href={`/app/students/${student.id}/edit`} variant="secondary">Editar aluno</ButtonLink> : null}
       />
 
@@ -92,6 +97,8 @@ export default function StudentProfilePage() {
         <InfoCard title="Acesso ao sistema" items={[[student.user ? student.user.name : 'Status', student.user ? student.user.email : 'Sem usuario vinculado']]} />
       </section>
 
+      {attendanceSummary ? <FrequencySection summary={attendanceSummary} history={attendanceHistory} /> : null}
+
       {me ? <GraduationPanel studentId={student.id} permissions={me.permissions} /> : null}
 
       <Card>
@@ -103,7 +110,7 @@ export default function StudentProfilePage() {
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <p className="font-semibold text-foreground">{guardian.fullName}</p>
-                  <p className="mt-1 text-sm text-mutedForeground">{guardian.relationship} · {guardian.phone}</p>
+                  <p className="mt-1 text-sm text-mutedForeground">{guardian.relationship} Â· {guardian.phone}</p>
                 </div>
                 {guardian.primary ? <Badge tone="primary">Principal</Badge> : null}
               </div>
@@ -132,7 +139,7 @@ export default function StudentProfilePage() {
           {student.emergencyContact ? (
             <div className="space-y-2 text-sm text-mutedForeground">
               <p className="font-semibold text-foreground">{student.emergencyContact.name}</p>
-              <p>{student.emergencyContact.relationship} · {student.emergencyContact.phone}</p>
+              <p>{student.emergencyContact.relationship} Â· {student.emergencyContact.phone}</p>
             </div>
           ) : <p className="text-sm text-mutedForeground">Nao informado.</p>}
         </Card>
@@ -145,6 +152,46 @@ export default function StudentProfilePage() {
   );
 }
 
+
+function FrequencySection({ summary, history }: { summary: StudentAttendanceSummary; history: StudentAttendanceHistoryItem[] }) {
+  return (
+    <Card>
+      <CardHeader title="Frequencia" eyebrow="Dados reais de treino" />
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <Metric label="Total de treinos" value={summary.totalTrainings} />
+        <Metric label="Ultimos 30 dias" value={summary.last30Days} />
+        <Metric label="Ultimos 90 dias" value={summary.last90Days} />
+        <Metric label="Este mes" value={summary.currentMonth} />
+      </div>
+      <div className="mt-4 grid gap-3 sm:grid-cols-2">
+        <Metric label="Gi" value={summary.giCount} subtle />
+        <Metric label="No-Gi" value={summary.noGiCount} subtle />
+      </div>
+      <div className="mt-6 border-t border-border pt-5">
+        <h3 className="font-semibold text-foreground">Historico de treinos</h3>
+        {history.length === 0 ? <p className="mt-2 text-sm text-mutedForeground">Nenhum treino registrado ainda.</p> : (
+          <div className="mt-3 grid gap-3">
+            {history.slice(0, 6).map((item) => (
+              <div key={item.attendanceId} className="rounded-2xl border border-border bg-surfaceElevated p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="font-semibold text-foreground">{item.trainingSession.dojoClass.name}</p>
+                    <p className="mt-1 text-sm text-mutedForeground">{formatDate(item.trainingSession.sessionDate)} Â· {item.trainingSession.startTime.slice(0, 5)} Â· {item.trainingSession.unit.name}</p>
+                  </div>
+                  <Badge tone={item.source === "QR" ? "primary" : "neutral"}>{item.source}</Badge>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </Card>
+  );
+}
+
+function Metric({ label, value, subtle = false }: { label: string; value: number; subtle?: boolean }) {
+  return <div className={`rounded-2xl border border-border p-4 ${subtle ? "bg-surfaceElevated" : "bg-foreground text-white"}`}><p className={subtle ? "caption-text" : "text-xs uppercase tracking-[0.16em] text-white/55"}>{label}</p><p className={`mt-2 text-3xl font-semibold ${subtle ? "text-foreground" : "text-white"}`}>{value}</p></div>;
+}
 function HeroMetric({ icon, label, value }: { icon: ReactNode; label: string; value: string }) {
   return <div className="rounded-2xl border border-white/10 bg-white/6 p-4"><div className="flex items-center gap-2 text-white/55">{icon}<span className="text-xs uppercase tracking-[0.16em]">{label}</span></div><p className="mt-2 font-semibold text-white">{value}</p></div>;
 }

@@ -10,4 +10,7 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 public interface StudentRepository extends JpaRepository<Student, UUID>, JpaSpecificationExecutor<Student> {
     @EntityGraph(attributePaths = {"primaryUnit", "user"})
     Optional<Student> findByIdAndTenantId(UUID id, UUID tenantId);
+
+    @EntityGraph(attributePaths = {"primaryUnit", "user"})
+    Optional<Student> findByTenantIdAndUserId(UUID tenantId, UUID userId);
 }

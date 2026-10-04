@@ -34,3 +34,16 @@ Ainda ficam para ciclos futuros:
 - prontuario medico;
 - protecao de QR/check-in;
 - device management detalhado para refresh tokens.
+
+## Cycle 06 - Attendance & Check-in Security
+
+- Tenant continua vindo exclusivamente da autenticacao.
+- Registro manual valida TrainingSession e Student no tenant autenticado.
+- Self check-in aceita apenas token opaco e resolve o Student pelo User autenticado.
+- O token plaintext e entregue uma unica vez ao frontend; o banco armazena SHA-256.
+- O QR expira por `app.check-in.qr-ttl-seconds` com default de 60 segundos.
+- Token valido ainda exige TrainingSession OPEN.
+- Duplicidade de Attendance ACTIVE e protegida por indice unico parcial no banco.
+- VOID nao apaga presenca; registra motivo, usuario e timestamp.
+- `recordedByUserId`, `createdByUserId` e `voidedByUserId` vêm da autenticacao.
+- Nao ha DELETE fisico de Attendance ou CheckIn exposto pela API.

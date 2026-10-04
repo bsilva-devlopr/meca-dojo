@@ -59,6 +59,11 @@ class GraduationIntegrationTests extends AbstractPostgreSqlTestcontainer {
 
     @BeforeEach
     void cleanData() {
+        jdbcTemplate.execute("update check_ins set attendance_id = null");
+        jdbcTemplate.execute("update attendances set check_in_id = null");
+        jdbcTemplate.execute("delete from attendances");
+        jdbcTemplate.execute("delete from check_ins");
+        jdbcTemplate.execute("delete from check_in_tokens");
         jdbcTemplate.execute("delete from training_session_staff");
         jdbcTemplate.execute("delete from training_sessions");
         jdbcTemplate.execute("delete from class_schedule_staff");
@@ -201,7 +206,8 @@ class GraduationIntegrationTests extends AbstractPostgreSqlTestcontainer {
         CurrentGraduationResponse notEligible = restTemplate.exchange(url("/api/v1/students/" + student.getId() + "/graduation"), HttpMethod.GET, bearer(token), CurrentGraduationResponse.class).getBody();
         assertThat(notEligible.eligibility().eligible()).isFalse();
         assertThat(notEligible.eligibility().reasons()).contains("Tempo minimo na graduacao atual ainda nao atingido");
-        assertThat(notEligible.eligibility().warnings()).contains("Criterio de frequencia ainda nao disponivel neste ciclo");
+        assertThat(notEligible.eligibility().reasons()).contains("Quantidade minima de treinos ainda nao atingida");
+        assertThat(notEligible.eligibility().warnings()).doesNotContain("Criterio de frequencia ainda nao disponivel neste ciclo");
 
         restTemplate.exchange(url("/api/v1/graduation-policies/WHITE?system=GENERAL"), HttpMethod.PUT, bearer(token, Map.of("minimumDaysInGrade", 1)), String.class);
         CurrentGraduationResponse eligible = restTemplate.exchange(url("/api/v1/students/" + student.getId() + "/graduation"), HttpMethod.GET, bearer(token), CurrentGraduationResponse.class).getBody();
@@ -284,3 +290,5 @@ class GraduationIntegrationTests extends AbstractPostgreSqlTestcontainer {
     private record Fixture(Tenant tenant, Unit unit, User user) {
     }
 }
+
+

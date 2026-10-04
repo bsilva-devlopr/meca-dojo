@@ -65,3 +65,15 @@ Mapping atual:
 Um usuario pode ter mais de uma role via `user_roles`. Autorizacao em endpoints usa permissions, nao apenas `hasRole`.
 
 Custom roles ficam fora do Cycle 01.
+
+## Cycle 06 update
+
+Permissions adicionadas: `ATTENDANCE_READ`, `ATTENDANCE_CREATE`, `ATTENDANCE_VOID`, `CHECKIN_TOKEN_CREATE`, `CHECKIN_AUDIT_READ`.
+
+Mapping final:
+
+- OWNER e ADMIN: todas.
+- PROFESSOR: leitura/criacao/correcao de presenca, criacao de QR e leitura de auditoria de check-in.
+- INSTRUCTOR: leitura/criacao de presenca e criacao de QR; sem correcao de presenca.
+- RECEPTION: leitura/criacao/correcao de presenca e leitura de auditoria; sem criacao de QR.
+- STUDENT e GUARDIAN: sem permissions administrativas. Student pode executar self check-in por regra especifica de usuario autenticado + Student vinculado + token valido.

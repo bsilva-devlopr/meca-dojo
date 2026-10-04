@@ -1,4 +1,4 @@
-﻿# Meca Dojo Design System
+# Meca Dojo Design System
 
 ## Principios visuais
 
@@ -132,3 +132,11 @@ Nao usar linguagem tecnica como "materializar recorrencia" na UI. O fluxo admini
 Modality badges devem usar texto sempre visivel: Gi, No-Gi, Mista ou Outra. A cor e suporte visual, nunca o unico indicador.
 
 A navegacao mobile deve priorizar poucos destinos. Com o crescimento de modulos, manter itens principais como Inicio, Alunos, Agenda e Mais, em vez de lotar a barra inferior.
+
+## Attendance & Check-in experience
+
+Fluxos de tatame devem permanecer mobile-first. No detalhe do treino OPEN, a area de Presencas mostra contagem, lista com iniciais, nome, horario e origem, alem de busca por nome para registro manual. Correcoes usam a linguagem "Corrigir presenca" e exigem motivo.
+
+O QR de check-in deve ser gerado localmente no frontend, grande o suficiente para leitura no celular/tablet, com tempo restante visivel e acao de renovar. Nao usar servicos externos de QR.
+
+A rota `/check-in` deve comunicar estados com texto claro: presenca registrada, ja registrada, QR expirado, treino fechado, conta sem aluno vinculado ou erro. Nao usar gamificacao excessiva.
