@@ -1,14 +1,18 @@
-﻿import { Card } from "@/src/components/ui/Card";
+import { StudentExperience } from "@/src/components/student/StudentExperience";
+import { Card } from "@/src/components/ui/Card";
 import { PageHeader } from "@/src/components/ui/States";
 import { Badge } from "@/src/components/ui/Badge";
 import { getCurrentUser } from "@/src/lib/auth/server";
 import { redirect } from "next/navigation";
 
-export default async function AppPage() {
+export default async function AppPage({ searchParams }: { searchParams: Promise<{ view?: string }> }) {
   const user = await getCurrentUser();
   if (!user) {
     redirect("/login");
   }
+
+  const params = await searchParams;
+  if (user.roles.includes("STUDENT") && (params.view !== "management" || !user.roles.some(role => ["OWNER", "ADMIN", "PROFESSOR", "INSTRUCTOR", "RECEPTION"].includes(role)))) return <StudentExperience />;
 
   return (
     <div className="space-y-6">

@@ -5,7 +5,7 @@ import { LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-export function LogoutButton() {
+export function LogoutButton({ onDark = true }: { onDark?: boolean }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
 
@@ -17,7 +17,7 @@ export function LogoutButton() {
   }
 
   return (
-    <Button type="button" onClick={logout} disabled={loading} variant="secondary" className="w-full border-white/10 bg-white/8 text-white hover:bg-white/12 hover:text-white">
+    <Button type="button" onClick={logout} disabled={loading} variant={onDark ? "ghost" : "secondary"} className={onDark ? "w-full border border-white/10 bg-white/8 text-white hover:bg-white/12 hover:text-white" : "w-full"}>
       <LogOut className="h-4 w-4" aria-hidden="true" />
       {loading ? "Saindo..." : "Sair"}
     </Button>

@@ -140,3 +140,8 @@ Fluxos de tatame devem permanecer mobile-first. No detalhe do treino OPEN, a are
 O QR de check-in deve ser gerado localmente no frontend, grande o suficiente para leitura no celular/tablet, com tempo restante visivel e acao de renovar. Nao usar servicos externos de QR.
 
 A rota `/check-in` deve comunicar estados com texto claro: presenca registrada, ja registrada, QR expirado, treino fechado, conta sem aluno vinculado ou erro. Nao usar gamificacao excessiva.
+## Student experience
+
+The student home prioritizes the next available session, QR guidance, graduation and completed frequency. A compact identity/belt/total summary must be useful in the first 375px viewport; additional available sessions follow the graduation/frequency cards. Reuse BeltBadge with a textual name and degree, hiding the technical code for self-service.
+
+Student navigation is Inicio, Treinos, Evolucao and Perfil; mobile navigation retains comfortable touch targets and `env(safe-area-inset-bottom)`. Multi-role users can move to management via a contextual link. Show skeletons, retryable API errors, unlinked-account guidance and real empty states. The check-in CTA explains scanning the professor QR and never creates attendance without a token.

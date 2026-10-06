@@ -1,4 +1,4 @@
-﻿import { cn } from "@/src/lib/utils/cn";
+import { cn } from "@/src/lib/utils/cn";
 import { type BeltResponse } from "@/src/lib/graduation/types";
 
 type BeltStyle = { shell: string; bar: string; rail: string; text: string };
@@ -23,7 +23,7 @@ const beltStyles: Record<string, BeltStyle> = {
   GREEN_BLACK: { shell: "bg-green-50", bar: "bg-gradient-to-r from-green-700 via-green-800 to-stone-950", rail: "bg-stone-950", text: "text-green-900" },
 };
 
-export function BeltBadge({ belt, degree, hero = false }: { belt: BeltResponse; degree: number; hero?: boolean }) {
+export function BeltBadge({ belt, degree, hero = false, showCode = true }: { belt: Omit<BeltResponse, "id">; degree: number; hero?: boolean; showCode?: boolean }) {
   const style = beltStyles[belt.code] ?? beltStyles.WHITE;
   const maxMarkers = Math.max(belt.maxDegree, degree, 4);
   return (
@@ -40,7 +40,7 @@ export function BeltBadge({ belt, degree, hero = false }: { belt: BeltResponse; 
           <p className={cn("font-semibold", hero ? "text-2xl" : "text-base", style.text)}>{belt.name}</p>
           <p className="text-sm text-mutedForeground">{degree} {degree === 1 ? "grau" : "graus"} · {belt.system === "KIDS" ? "Infantil" : "Adulto / geral"}</p>
         </div>
-        <p className="caption-text">{belt.code}</p>
+        {showCode && <p className="caption-text">{belt.code}</p>}
       </div>
     </div>
   );

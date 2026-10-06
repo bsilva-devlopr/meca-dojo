@@ -30,24 +30,31 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class AttendanceService {
+    boolean hasActiveAttendance(UUID sessionId, UUID studentId) {
+        return attendanceRepository.findByTenantIdAndTrainingSessionIdAndStudentIdAndStatus(
+            CurrentUser.get().tenantId(), sessionId, studentId, AttendanceStatus.ACTIVE).isPresent();
+    }
     private final AttendanceRepository attendanceRepository;
     private final CheckInRepository checkInRepository;
     private final TrainingSessionRepository trainingSessionRepository;
     private final StudentRepository studentRepository;
     private final PeopleReferenceService references;
+    private final ZoneId operationalZone;
 
     public AttendanceService(
         AttendanceRepository attendanceRepository,
         CheckInRepository checkInRepository,
         TrainingSessionRepository trainingSessionRepository,
         StudentRepository studentRepository,
-        PeopleReferenceService references
+        PeopleReferenceService references,
+        @org.springframework.beans.factory.annotation.Value("${app.operational-zone:America/Sao_Paulo}") String operationalZone
     ) {
         this.attendanceRepository = attendanceRepository;
         this.checkInRepository = checkInRepository;
         this.trainingSessionRepository = trainingSessionRepository;
         this.studentRepository = studentRepository;
         this.references = references;
+        this.operationalZone = ZoneId.of(operationalZone);
     }
 
     @Transactional
@@ -86,7 +93,7 @@ public class AttendanceService {
     @Transactional(readOnly = true)
     public List<StudentAttendanceHistoryItem> studentHistory(UUID studentId) {
         loadStudentSameTenant(studentId);
-        return attendanceRepository.findAllByTenantIdAndStudentIdAndStatusOrderByCheckedInAtDesc(CurrentUser.get().tenantId(), studentId, AttendanceStatus.ACTIVE)
+        return attendanceRepository.findOfficialHistoryList(CurrentUser.get().tenantId(), studentId, org.springframework.data.domain.Pageable.unpaged())
             .stream()
             .map(attendance -> new StudentAttendanceHistoryItem(attendance.getId(), sessionSummary(attendance.getTrainingSession()), attendance.getSource(), attendance.getCheckedInAt()))
             .toList();
@@ -96,17 +103,16 @@ public class AttendanceService {
     public StudentAttendanceSummary studentSummary(UUID studentId) {
         loadStudentSameTenant(studentId);
         UUID tenantId = CurrentUser.get().tenantId();
-        Instant now = Instant.now();
-        LocalDate firstOfMonth = LocalDate.now().withDayOfMonth(1);
-        Instant monthStart = firstOfMonth.atStartOfDay(ZoneId.systemDefault()).toInstant();
-        Instant nextMonth = firstOfMonth.plusMonths(1).atStartOfDay(ZoneId.systemDefault()).toInstant();
+        LocalDate today = LocalDate.now(operationalZone);
+        LocalDate monthStart = today.withDayOfMonth(1);
+        LocalDate nextMonth = monthStart.plusMonths(1);
         return new StudentAttendanceSummary(
-            attendanceRepository.countByTenantIdAndStudentIdAndStatus(tenantId, studentId, AttendanceStatus.ACTIVE),
-            attendanceRepository.countByTenantIdAndStudentIdAndStatusAndCheckedInAtGreaterThanEqual(tenantId, studentId, AttendanceStatus.ACTIVE, now.minus(java.time.Duration.ofDays(30))),
-            attendanceRepository.countByTenantIdAndStudentIdAndStatusAndCheckedInAtGreaterThanEqual(tenantId, studentId, AttendanceStatus.ACTIVE, now.minus(java.time.Duration.ofDays(90))),
-            attendanceRepository.countActiveByModality(tenantId, studentId, ClassModality.GI),
-            attendanceRepository.countActiveByModality(tenantId, studentId, ClassModality.NO_GI),
-            attendanceRepository.countActiveBetween(tenantId, studentId, monthStart, nextMonth)
+            attendanceRepository.countActiveBySessionStatus(tenantId, studentId, TrainingSessionStatus.COMPLETED),
+            attendanceRepository.countOfficialBetween(tenantId, studentId, today.minusDays(29), today.plusDays(1)),
+            attendanceRepository.countOfficialBetween(tenantId, studentId, today.minusDays(89), today.plusDays(1)),
+            attendanceRepository.countOfficialByModality(tenantId, studentId, ClassModality.GI),
+            attendanceRepository.countOfficialByModality(tenantId, studentId, ClassModality.NO_GI),
+            attendanceRepository.countOfficialBetween(tenantId, studentId, monthStart, nextMonth)
         );
     }
 

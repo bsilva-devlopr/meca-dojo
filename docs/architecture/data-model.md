@@ -25,7 +25,7 @@ Cycle 03 cria Belts & Graduation:
 
 - `belts`: catalogo global de faixas, com `code`, `display_name`, `system`, `sequence`, `max_degree` e `active`. `UNIQUE(system, code)` permite `WHITE` em GENERAL e KIDS; `UNIQUE(system, sequence)` garante ordenacao por sistema.
 - `student_graduations`: historico tenant-scoped de eventos de graduacao. Guarda `student_id`, `belt_id`, `degree`, `graduated_at`, `awarded_by_staff_id`, `type`, `created_by_user_id`, `corrects_graduation_id`, `correction_reason` e `created_at`.
-- `graduation_policies`: politica tenant-scoped por faixa, com `minimum_days_in_grade`, `minimum_training_count` preparado para ciclo futuro de frequencia, `active` e `UNIQUE(tenant_id, belt_id)`.
+- `graduation_policies`: politica tenant-scoped por faixa, com `minimum_days_in_grade`, `minimum_training_count` alimentado por Attendance ACTIVE em TrainingSession COMPLETED, `active` e `UNIQUE(tenant_id, belt_id)`.
 
 Cycle 04 cria Classes & Schedule:
 
@@ -49,3 +49,6 @@ Cycle 06 cria Attendance & Check-in:
 - `check_ins`: tentativas auditaveis de check-in por QR, com status aceito, duplicado, expirado, invalido, sessao fechada, aluno invalido ou usuario sem aluno vinculado.
 
 Attendance `VOIDED` permanece auditavel, mas nao conta em frequencia, resumo do aluno ou elegibilidade de graduacao.
+## Cycle 07 queries
+
+No schema change and no V8 migration. Official attendance queries join TrainingSession and require COMPLETED plus ACTIVE attendance. Frequency periods use the local session_date. Self training history is paginated in PostgreSQL, ordered by session_date/start_time descending, then checked_in_at. Session staff are loaded in bulk after selecting the page. Existing tenant/student/session indexes remain applicable; no speculative index is added.

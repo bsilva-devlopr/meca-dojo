@@ -29,10 +29,13 @@ AuditLog registra mudancas criticas.
 
 ## Attendance & Check-in
 
-`Attendance` representa a presenca oficial e e a fonte de verdade para frequencia. Conta apenas quando `status = ACTIVE`. `VOIDED` preserva auditoria de correcoes operacionais e permite registrar uma nova presenca ACTIVE para o mesmo aluno e sessao.
+`Attendance` representa a presenca oficial e e a fonte de verdade para frequencia. Conta oficialmente apenas quando `status = ACTIVE` e TrainingSession esta COMPLETED. `VOIDED` preserva auditoria de correcoes operacionais e permite registrar uma nova presenca ACTIVE para o mesmo aluno e sessao.
 
 `CheckIn` representa a tentativa operacional, nao a frequencia. Um QR expirado, uma tentativa duplicada ou uma conta sem Student vinculado gera CheckIn auditavel sem criar Attendance.
 
 Self check-in resolve `User -> Student` no backend. O navegador envia apenas o token opaco do QR; nunca escolhe `studentId` nesse fluxo. Student ACTIVE e TRIAL podem treinar; INACTIVE e SUSPENDED sao rejeitados.
 
-Attendance pode ser registrada enquanto a TrainingSession esta OPEN. A contagem aparece imediatamente no historico e resumo do aluno, mesmo antes da sessao ser COMPLETED. Sessoes SCHEDULED, COMPLETED e CANCELLED nao aceitam novas presencas.
+Attendance pode ser registrada enquanto a TrainingSession esta OPEN. A presenca e operacional enquanto OPEN; aparece no historico oficial e resumo apenas depois de COMPLETED. CANCELLED nunca conta. Sessoes SCHEDULED, COMPLETED e CANCELLED nao aceitam novas presencas.
+## Student self-service (Cycle 07)
+
+Student identity is resolved by authenticated tenant and User through Student.userId. The self-service view derives graduation from StudentGraduation history and frequency from ACTIVE Attendance in COMPLETED TrainingSessions. OPEN attendance is operational only; cancellation retains audit records without increasing official totals. See ADR-013.

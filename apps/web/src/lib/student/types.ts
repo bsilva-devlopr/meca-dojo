@@ -1,0 +1,10 @@
+import type { BeltResponse } from "@/src/lib/graduation/types";
+export type Belt = Omit<BeltResponse, "id">;
+export type Criteria = { completedTrainings: number; minimumTrainingCount: number | null; daysInGrade: number | null; minimumDaysInGrade: number | null };
+export type Graduation = { belt: Belt; degree: number; graduatedAt: string | null; awardedBy: { name: string } | null; type: string; criteria?: Criteria | null };
+export type Profile = { displayName: string; fullName: string; email: string | null; phone: string | null; status: string; joinDate: string | null; primaryUnit: { name: string } | null; emergencyContact: { name: string; relationship: string; phone: string } | null };
+export type Session = { id: string; className: string; modality: string; unitName: string; sessionDate: string; startTime: string; endTime: string; status: string; staff: { name: string }[]; attendanceRegistered: boolean };
+export type Training = { attendanceId: string; session: Session; source: string; checkedInAt: string };
+export type Frequency = { totalTrainings: number; last30Days: number; last90Days: number; currentMonth: number; giCount: number; noGiCount: number };
+export type Dashboard = { student: Profile; currentBelt: Graduation | null; frequency: Frequency; currentSession: Session | null; upcomingSessions: Session[]; recentTrainings: Training[]; graduationHistory: Graduation[] };
+export type HistoryPage = { content: Training[]; page: number; size: number; totalElements: number; totalPages: number };

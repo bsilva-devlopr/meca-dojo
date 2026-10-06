@@ -1,6 +1,5 @@
 package br.com.mecadojo.api.graduation.service;
 
-import br.com.mecadojo.api.attendance.domain.AttendanceStatus;
 import br.com.mecadojo.api.attendance.repository.AttendanceRepository;
 import br.com.mecadojo.api.graduation.api.dto.GraduationDtos.EligibilityResponse;
 import br.com.mecadojo.api.graduation.domain.GraduationPolicy;
@@ -48,7 +47,7 @@ public class GraduationEligibilityService {
             }
         }
         if (policy.getMinimumTrainingCount() != null) {
-            long trainings = attendanceRepository.countByTenantIdAndStudentIdAndStatus(CurrentUser.get().tenantId(), current.getStudent().getId(), AttendanceStatus.ACTIVE);
+            long trainings = attendanceRepository.countActiveBySessionStatus(CurrentUser.get().tenantId(), current.getStudent().getId(), br.com.mecadojo.api.training.domain.TrainingSessionStatus.COMPLETED);
             if (trainings < policy.getMinimumTrainingCount()) {
                 reasons.add("Quantidade minima de treinos ainda nao atingida");
             }

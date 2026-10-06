@@ -68,7 +68,7 @@ function CheckInContent() {
             <Badge tone={success || duplicate ? "success" : closed ? "warning" : "danger"}>{labelFor(result.status)}</Badge>
             <div className="flex gap-3 rounded-2xl border border-border bg-surfaceElevated p-4">
               <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-primary/10 text-primary"><Dumbbell className="h-4 w-4" aria-hidden="true" /></div>
-              <div><p className="font-semibold text-foreground">{result.trainingSession.dojoClass.name}</p><p className="mt-1 text-sm text-mutedForeground">{time(result.trainingSession.startTime)} ï¿½ {result.trainingSession.unit.name}</p></div>
+              <div><p className="font-semibold text-foreground">{result.trainingSession.dojoClass.name}</p><p className="mt-1 text-sm text-mutedForeground">{time(result.trainingSession.startTime)} · {result.trainingSession.unit.name}</p></div>
             </div>
             {success ? <p className="text-center text-sm font-medium text-foreground">Bom treino!</p> : null}
           </div>
@@ -80,6 +80,6 @@ function CheckInContent() {
 }
 
 function Shell({ children }: { children: React.ReactNode }) { return <main className="min-h-screen bg-background px-4 py-8 text-foreground"><div className="mx-auto flex min-h-[calc(100vh-4rem)] w-full max-w-md flex-col justify-center gap-4"><p className="caption-text text-center">MECA DOJO CHECK-IN</p>{children}</div></main>; }
-function titleFor(status: string) { if (status === "ACCEPTED") return "Presenca registrada!"; if (status === "DUPLICATE") return "Ja registrada"; if (status === "EXPIRED") return "QR expirado"; if (status === "SESSION_CLOSED") return "Treino fechado"; if (status === "UNLINKED_USER") return "Conta sem aluno vinculado"; return "Check-in nao realizado"; }
+function titleFor(status: string) { if (status === "ACCEPTED") return "Presença confirmada!"; if (status === "DUPLICATE") return "Sua presença já está registrada"; if (status === "EXPIRED") return "QR expirado"; if (status === "SESSION_CLOSED") return "Treino fechado"; if (status === "UNLINKED_USER") return "Conta sem aluno vinculado"; return "Check-in nao realizado"; }
 function labelFor(status: string) { if (status === "ACCEPTED") return "Registrado"; if (status === "DUPLICATE") return "Ja registrado"; if (status === "EXPIRED") return "Expirado"; if (status === "SESSION_CLOSED") return "Fechado"; return "Atencao"; }
 function time(value: string) { return value.slice(0, 5); }

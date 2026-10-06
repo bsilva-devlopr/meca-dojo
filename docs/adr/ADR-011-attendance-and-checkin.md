@@ -31,3 +31,7 @@ A UI do professor no detalhe do treino OPEN mostra Presencas, registro manual po
 Nao foi criado scheduler de limpeza de tokens expirados neste ciclo; eles permanecem para auditoria e limpeza futura.
 
 Nao foram implementados reservas, waitlist, push, gamificacao, geolocalizacao, biometria, NFC ou app nativo.
+
+## Cycle 07 amendment
+
+ADR-013 supersedes immediate official counting: ACTIVE attendance is operational while the session is OPEN. Official frequency/history and minimumTrainingCount require the session to be COMPLETED. CANCELLED attendance remains auditable and does not count. Duplicate QR checks remain independent of official history.

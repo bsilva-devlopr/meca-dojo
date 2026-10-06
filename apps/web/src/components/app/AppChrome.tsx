@@ -18,6 +18,13 @@ const navItems = [
   { href: "/app/units", label: "Unidades", icon: MapPin },
 ];
 
+const studentNavItems = [
+  { href: "/app", label: "Início", icon: LayoutDashboard, exact: true },
+  { href: "/app/history", label: "Treinos", icon: Dumbbell },
+  { href: "/app/progress", label: "Evolução", icon: GraduationCap },
+  { href: "/app/profile", label: "Perfil", icon: UsersRound },
+];
+
 const mobileNavItems = [
   { href: "/app", label: "Inicio", icon: LayoutDashboard, exact: true },
   { href: "/app/students", label: "Alunos", icon: GraduationCap },
@@ -27,6 +34,12 @@ const mobileNavItems = [
 
 export function AppChrome({ user, children }: { user: MeResponse; children: ReactNode }) {
   const pathname = usePathname();
+  const linkedRole = user.roles.includes("STUDENT");
+  const management = user.roles.some(role => ["OWNER", "ADMIN", "PROFESSOR", "INSTRUCTOR", "RECEPTION"].includes(role));
+  const administrativeRoute = ["/app/students", "/app/training", "/app/schedule", "/app/classes", "/app/staff", "/app/units"].some(path => pathname.startsWith(path));
+  const studentArea = linkedRole && (!management || !administrativeRoute);
+  const desktopItems = studentArea ? studentNavItems : navItems;
+  const mobileItems = studentArea ? studentNavItems : mobileNavItems;
 
   return (
     <main className="min-h-screen overflow-x-hidden bg-background text-foreground">
@@ -44,11 +57,11 @@ export function AppChrome({ user, children }: { user: MeResponse; children: Reac
         </div>
 
         <nav className="flex-1 space-y-1 px-4" aria-label="Navegacao principal">
-          {navItems.map((item) => {
+          {desktopItems.map((item) => {
             const active = item.exact ? pathname === item.href : pathname.startsWith(item.href);
             const Icon = item.icon;
             return (
-              <Link key={item.href} href={item.href} className={cn(
+              <Link key={item.href} href={item.href} aria-current={active ? "page" : undefined} className={cn(
                 "focus-ring flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium transition",
                 active ? "bg-white text-foreground shadow-card" : "text-white/68 hover:bg-white/8 hover:text-white"
               )}>
@@ -64,7 +77,7 @@ export function AppChrome({ user, children }: { user: MeResponse; children: Reac
             <Avatar name={user.name} />
             <div className="min-w-0">
               <p className="truncate text-sm font-semibold text-white">{user.name}</p>
-              <p className="truncate text-xs text-white/55">{user.roles.join(", ")}</p>
+              <p className="truncate text-xs text-white/55">{studentArea ? "Aluno" : user.roles.join(", ")}</p>
             </div>
           </div>
           <LogoutButton />
@@ -78,7 +91,8 @@ export function AppChrome({ user, children }: { user: MeResponse; children: Reac
               <p className="caption-text">{user.tenant.name}</p>
               <p className="mt-1 text-sm text-mutedForeground">Ola, {user.name}</p>
             </div>
-            <div className="hidden items-center gap-3 sm:flex">
+            <div className="flex shrink-0 items-center gap-3">
+              {linkedRole && management && <Link className="focus-ring rounded-lg border border-border px-3 py-3 text-xs font-semibold" href={studentArea ? "/app/training" : "/app"}>{studentArea ? "Gestão" : "Área do aluno"}</Link>}
               <Avatar name={user.name} compact />
             </div>
           </div>
@@ -87,13 +101,13 @@ export function AppChrome({ user, children }: { user: MeResponse; children: Reac
         <section className="mx-auto max-w-7xl overflow-x-hidden px-4 pb-28 pt-6 sm:px-6 lg:px-8 lg:pb-10">{children}</section>
       </div>
 
-      <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-surface/95 px-2 py-2 shadow-soft backdrop-blur lg:hidden" aria-label="Navegacao principal mobile">
+      <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-surface/95 px-2 py-2 shadow-soft backdrop-blur lg:hidden" aria-label="Navegacao principal mobile" style={{ paddingBottom: "calc(0.5rem + env(safe-area-inset-bottom))" }}>
         <div className="grid grid-cols-4 gap-1">
-          {mobileNavItems.map((item) => {
+          {mobileItems.map((item) => {
             const active = item.exact ? pathname === item.href : pathname.startsWith(item.href);
             const Icon = item.icon;
             return (
-              <Link key={item.href} href={item.href} className={cn(
+              <Link key={item.href} href={item.href} aria-current={active ? "page" : undefined} className={cn(
                 "focus-ring flex flex-col items-center justify-center gap-1 rounded-xl px-2 py-2 text-xs font-semibold transition",
                 active ? "bg-primary text-primaryForeground" : "text-mutedForeground hover:bg-surfaceElevated hover:text-foreground"
               )}>

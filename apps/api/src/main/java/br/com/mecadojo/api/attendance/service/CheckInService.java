@@ -95,10 +95,7 @@ public class CheckInService {
         } catch (RuntimeException exception) {
             return rejected(CheckInStatus.STUDENT_INVALID, "Aluno nao habilitado para check-in.", token.getTenant(), session, student, tokenIdentifier);
         }
-        var existing = attendanceService.studentHistory(student.getId()).stream()
-            .filter(item -> item.trainingSession().id().equals(session.getId()))
-            .findFirst();
-        if (existing.isPresent()) {
+        if (attendanceService.hasActiveAttendance(session.getId(), student.getId())) {
             CheckIn duplicate = checkInRepository.save(new CheckIn(token.getTenant(), session, student, CheckInStatus.DUPLICATE, now, tokenIdentifier, "Attendance already registered"));
             return new CheckInResponse(CheckInStatus.DUPLICATE, "Sua presenca ja foi registrada neste treino.", null, attendanceService.sessionSummary(session), duplicate.getOccurredAt());
         }

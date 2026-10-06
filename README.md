@@ -284,3 +284,16 @@ Variaveis principais:
 - Web: `API_BASE_URL`, `NEXT_PUBLIC_APP_URL`.
 
 Use `apps/api/.env.example` e `apps/web/.env.example` como templates. Nao versionar `.env` real, tokens de provider, senhas, JWT secrets ou URLs com credenciais.
+
+## Student Experience (Cycle 07)
+
+Student accounts have a dedicated `/app` home, `/app/history`, `/app/progress` and `/app/profile`. Read-only self-service APIs resolve the student through the authenticated tenant/user, without granting administrative permissions:
+
+- `GET /api/v1/student/me/dashboard`
+- `GET /api/v1/student/me/training-history?page=0&size=20`
+- `GET /api/v1/student/me/graduation`
+- `GET /api/v1/student/me/profile`
+
+Official frequency and graduation training counts require ACTIVE attendance in COMPLETED sessions. OPEN attendance remains operational, and CANCELLED/VOIDED do not count. `APP_OPERATIONAL_ZONE` defaults to `America/Sao_Paulo` until Unit timezone is modeled. No V8 migration is necessary. See [ADR-013](docs/adr/ADR-013-student-self-service.md) and [student experience](docs/product/student-experience.md).
+
+Cycle 07 is local-only pending review; staging deployment is separate.

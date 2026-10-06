@@ -54,3 +54,7 @@ Cycle 06.1 mantem o browser falando com o BFF do Next.js. `API_BASE_URL` e priva
 Cookies de access/refresh token continuam `HttpOnly`, `SameSite=Lax` e `Secure` em build de producao. O backend aceita CORS apenas para origens explicitas em `APP_CORS_ALLOWED_ORIGINS` e falha a inicializacao se `*` for configurado junto com credenciais.
 
 Bootstrap fica desabilitado por padrao (`BOOTSTRAP_ENABLED=false`) fora de execucao local/one-time. Flyway continua habilitado para validate/migrate, com clean desabilitado. O backend aceita `PORT` de cloud runtime e URLs de PostgreSQL gerenciado sem commitar credenciais.
+
+## Student self-service
+
+`/api/v1/student/me/*` requires authentication and resolves tenant/user to the linked Student server-side. No studentId is accepted as the subject. STUDENT receives no administrative STUDENT_READ or ATTENDANCE_READ grants. Self DTOs exclude internal eligibility reasons and administrative graduation notes. INACTIVE/SUSPENDED can read their own data but cannot check in; ACTIVE/TRIAL retain existing QR rules. Multi-role navigation does not change backend permissions. Tokens remain in the existing HttpOnly BFF cookies, never localStorage.

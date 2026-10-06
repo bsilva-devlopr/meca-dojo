@@ -218,7 +218,7 @@ class AttendanceAndCheckInIntegrationTests extends AbstractPostgreSqlTestcontain
     }
 
     @Test
-    void attendanceSummaryUsesOnlyActiveAttendancesAndCountsModalities() {
+    void attendanceSummaryCountsOnlyActiveAttendancesFromCompletedSessions() {
         Fixture fixture = fixture("summary", RoleName.OWNER);
         String token = login(fixture.tenant().getSlug(), fixture.user().getEmail());
         Student student = student(fixture, "Aluno Summary", StudentStatus.ACTIVE, null);
@@ -226,15 +226,137 @@ class AttendanceAndCheckInIntegrationTests extends AbstractPostgreSqlTestcontain
         TrainingSessionResponse noGi = action(token, createManual(token, directClass(fixture, "NoGi", ClassModality.NO_GI).id(), fixture.unit().getId(), "10:00", "11:00").id(), "open");
         AttendanceResponse giAttendance = postAttendance(token, gi.id(), student.getId(), AttendanceResponse.class).getBody();
         postAttendance(token, noGi.id(), student.getId(), AttendanceResponse.class);
+
+        StudentAttendanceSummary openSummary = restTemplate.exchange(url("/api/v1/students/" + student.getId() + "/attendance/summary"), HttpMethod.GET, bearer(token), StudentAttendanceSummary.class).getBody();
+        assertThat(openSummary.totalTrainings()).as("OPEN + ACTIVE Attendance = 0 official").isZero();
+
+        action(token, noGi.id(), "complete");
         restTemplate.exchange(url("/api/v1/attendance/" + giAttendance.id() + "/void"), HttpMethod.POST, bearer(token, Map.of("reason", "corrigir")), AttendanceResponse.class);
 
-        StudentAttendanceSummary summary = restTemplate.exchange(url("/api/v1/students/" + student.getId() + "/attendance/summary"), HttpMethod.GET, bearer(token), StudentAttendanceSummary.class).getBody();
-        assertThat(summary.totalTrainings()).isEqualTo(1);
-        assertThat(summary.last30Days()).isEqualTo(1);
-        assertThat(summary.last90Days()).isEqualTo(1);
-        assertThat(summary.giCount()).isZero();
-        assertThat(summary.noGiCount()).isEqualTo(1);
-        assertThat(summary.currentMonth()).isEqualTo(1);
+        StudentAttendanceSummary completedSummary = restTemplate.exchange(url("/api/v1/students/" + student.getId() + "/attendance/summary"), HttpMethod.GET, bearer(token), StudentAttendanceSummary.class).getBody();
+        assertThat(completedSummary.totalTrainings()).as("COMPLETED + ACTIVE Attendance = 1 official").isEqualTo(1);
+        assertThat(completedSummary.last30Days()).isEqualTo(1);
+        assertThat(completedSummary.last90Days()).isEqualTo(1);
+        assertThat(completedSummary.giCount()).isZero();
+        assertThat(completedSummary.noGiCount()).isEqualTo(1);
+        assertThat(completedSummary.currentMonth()).isEqualTo(1);
+
+        TrainingSessionResponse cancelled = action(token, createManual(token, directClass(fixture, "Cancelada", ClassModality.GI).id(), fixture.unit().getId(), "12:00", "13:00").id(), "open");
+        postAttendance(token, cancelled.id(), student.getId(), AttendanceResponse.class);
+        restTemplate.exchange(url("/api/v1/training-sessions/" + cancelled.id() + "/cancel"), HttpMethod.POST, bearer(token, Map.of("reason", "Cancelada depois do check-in")), TrainingSessionResponse.class);
+        StudentAttendanceSummary cancelledSummary = restTemplate.exchange(url("/api/v1/students/" + student.getId() + "/attendance/summary"), HttpMethod.GET, bearer(token), StudentAttendanceSummary.class).getBody();
+        assertThat(cancelledSummary.totalTrainings()).as("CANCELLED + ACTIVE Attendance = 0 additional official").isEqualTo(1);
+    }
+
+    @Test
+    void studentSelfEndpointsResolveLinkedStudentAndUseOfficialCompletedCounts() {
+        Fixture fixture = fixture("student-self", RoleName.OWNER);
+        String ownerToken = login(fixture.tenant().getSlug(), fixture.user().getEmail());
+        User studentUser = user(fixture, "Aluno Self", "student@student-self.test", RoleName.STUDENT);
+        Student student = student(fixture, "Aluno Self", StudentStatus.ACTIVE, studentUser);
+        restTemplate.exchange(url("/api/v1/students/" + student.getId() + "/graduations/initial"), HttpMethod.POST, bearer(ownerToken, Map.of("beltCode", "WHITE", "system", "GENERAL", "degree", 2, "graduatedAt", LocalDate.now().minusMonths(6).toString())), String.class);
+        ClassResponse dojoClass = directClass(fixture, "Jiu-Jitsu Self", ClassModality.GI);
+        TrainingSessionResponse open = action(ownerToken, createManual(ownerToken, dojoClass.id(), fixture.unit().getId(), "18:00", "19:00").id(), "open");
+        postAttendance(ownerToken, open.id(), student.getId(), AttendanceResponse.class);
+        String studentToken = login(fixture.tenant().getSlug(), studentUser.getEmail());
+
+        ResponseEntity<Map> openDashboard = restTemplate.exchange(url("/api/v1/student/me/dashboard"), HttpMethod.GET, bearer(studentToken), Map.class);
+        assertThat(openDashboard.getStatusCode()).isEqualTo(HttpStatus.OK);
+        Map<?, ?> openFrequency = (Map<?, ?>) openDashboard.getBody().get("frequency");
+        assertThat(openFrequency.get("totalTrainings")).isEqualTo(0);
+        assertThat(openDashboard.getBody().get("currentBelt")).isNotNull();
+
+        action(ownerToken, open.id(), "complete");
+        ResponseEntity<Map> completedDashboard = restTemplate.exchange(url("/api/v1/student/me/dashboard"), HttpMethod.GET, bearer(studentToken), Map.class);
+        Map<?, ?> completedFrequency = (Map<?, ?>) completedDashboard.getBody().get("frequency");
+        assertThat(completedFrequency.get("totalTrainings")).isEqualTo(1);
+        ResponseEntity<Map> history = restTemplate.exchange(url("/api/v1/student/me/training-history?page=0&size=10"), HttpMethod.GET, bearer(studentToken), Map.class);
+        assertThat((List<?>) history.getBody().get("content")).hasSize(1);
+
+        User unlinked = user(fixture, "Sem Aluno", "unlinked@student-self.test", RoleName.STUDENT);
+        String unlinkedToken = login(fixture.tenant().getSlug(), unlinked.getEmail());
+        assertThat(restTemplate.exchange(url("/api/v1/student/me/dashboard"), HttpMethod.GET, bearer(unlinkedToken), String.class).getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+
+        Role professor = roleRepository.findByName(RoleName.PROFESSOR).orElseThrow();
+        Role studentRole = roleRepository.findByName(RoleName.STUDENT).orElseThrow();
+        User multiRole = userRepository.save(new User(fixture.tenant(), "Multi Role", "multi@student-self.test", passwordEncoder.encode("secret"), Set.of(professor, studentRole)));
+        student(fixture, "Multi Role", StudentStatus.TRIAL, multiRole);
+        assertThat(restTemplate.exchange(url("/api/v1/student/me/profile"), HttpMethod.GET, bearer(login(fixture.tenant().getSlug(), multiRole.getEmail())), Map.class).getStatusCode()).isEqualTo(HttpStatus.OK);
+    }
+
+    @Test
+    void selfScopeStatusesTenantIsolationAndPagination() {
+        Fixture a = fixture("self-scope-a", RoleName.OWNER);
+        Fixture b = fixture("self-scope-b", RoleName.OWNER);
+        String ownerToken = login(a.tenant().getSlug(), a.user().getEmail());
+        User linked = user(a, "Student A", "linked@self-a.test", RoleName.STUDENT);
+        Student own = student(a, "Student A", StudentStatus.ACTIVE, linked);
+        User other = user(b, "Student B", "linked@self-b.test", RoleName.STUDENT);
+        Student foreign = student(b, "Student B", StudentStatus.ACTIVE, other);
+        String token = login(a.tenant().getSlug(), linked.getEmail());
+        ClassResponse dojoClass = directClass(a, "History", ClassModality.GI);
+        for (int i = 0; i < 2; i++) {
+            TrainingSessionResponse session = action(ownerToken, createManual(ownerToken, dojoClass.id(), a.unit().getId(), "08:00", "09:00").id(), "open");
+            postAttendance(ownerToken, session.id(), own.getId(), AttendanceResponse.class);
+            action(ownerToken, session.id(), "complete");
+        }
+        Map first = restTemplate.exchange(url("/api/v1/student/me/training-history?page=0&size=1&studentId=" + foreign.getId()), HttpMethod.GET, bearer(token), Map.class).getBody();
+        Map second = restTemplate.exchange(url("/api/v1/student/me/training-history?page=1&size=1"), HttpMethod.GET, bearer(token), Map.class).getBody();
+        assertThat(first.get("totalElements")).isEqualTo(2);
+        assertThat(first.get("totalPages")).isEqualTo(2);
+        assertThat((List<?>) first.get("content")).hasSize(1);
+        assertThat((List<?>) second.get("content")).hasSize(1);
+        assertThat(first.get("content")).isNotEqualTo(second.get("content"));
+        Map foreignDashboard = restTemplate.exchange(url("/api/v1/student/me/dashboard"), HttpMethod.GET, bearer(login(b.tenant().getSlug(), other.getEmail())), Map.class).getBody();
+        assertThat(((Map<?, ?>) foreignDashboard.get("frequency")).get("totalTrainings")).isEqualTo(0);
+        assertThat(restTemplate.exchange(url("/api/v1/students/" + foreign.getId()), HttpMethod.GET, bearer(token), String.class).getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+        for (StudentStatus status : StudentStatus.values()) {
+            jdbcTemplate.update("update students set status = ? where id = ?", status.name(), own.getId());
+            Map profile = restTemplate.exchange(url("/api/v1/student/me/profile"), HttpMethod.GET, bearer(token), Map.class).getBody();
+            assertThat(profile.get("status")).isEqualTo(status.name());
+            Map dashboard = restTemplate.exchange(url("/api/v1/student/me/dashboard"), HttpMethod.GET, bearer(token), Map.class).getBody();
+            assertThat(((Map<?, ?>) dashboard.get("frequency")).get("totalTrainings")).isEqualTo(2);
+            if (status == StudentStatus.INACTIVE || status == StudentStatus.SUSPENDED) {
+                assertThat((List<?>) dashboard.get("upcomingSessions")).isEmpty();
+            }
+        }
+        TrainingSessionResponse scheduled = createManual(ownerToken, dojoClass.id(), a.unit().getId(), "08:00", "09:00");
+        jdbcTemplate.update("update students set status = 'ACTIVE' where id = ?", own.getId());
+        jdbcTemplate.update("update training_sessions set session_date = ? where id = ?", LocalDate.now().plusDays(1), scheduled.id());
+        Map before = restTemplate.exchange(url("/api/v1/student/me/dashboard"), HttpMethod.GET, bearer(token), Map.class).getBody();
+        assertThat((List<?>) before.get("upcomingSessions")).hasSize(1);
+        restTemplate.exchange(url("/api/v1/training-sessions/" + scheduled.id() + "/cancel"), HttpMethod.POST, bearer(ownerToken, Map.of("reason", "Test")), String.class);
+        Map after = restTemplate.exchange(url("/api/v1/student/me/dashboard"), HttpMethod.GET, bearer(token), Map.class).getBody();
+        assertThat((List<?>) after.get("upcomingSessions")).isEmpty();
+    }
+
+    @Test
+    void completedAttendanceFeedsGraduationCriteriaAndVoidRemovesIt() {
+        Fixture f = fixture("completed-criteria", RoleName.OWNER);
+        String ownerToken = login(f.tenant().getSlug(), f.user().getEmail());
+        User linked = user(f, "Student", "student@criteria.test", RoleName.STUDENT);
+        Student student = student(f, "Student", StudentStatus.ACTIVE, linked);
+        restTemplate.exchange(url("/api/v1/students/" + student.getId() + "/graduations/initial"), HttpMethod.POST, bearer(ownerToken, Map.of("beltCode", "WHITE", "system", "GENERAL", "degree", 1, "graduatedAt", LocalDate.now().minusMonths(6).toString())), String.class);
+        UUID beltId = jdbcTemplate.queryForObject("select id from belts where code = 'WHITE' and system = 'GENERAL'", UUID.class);
+        jdbcTemplate.update("insert into graduation_policies (id,tenant_id,belt_id,minimum_training_count,active,created_at,updated_at) values (?,?,?,1,true,now(),now())", UUID.randomUUID(), f.tenant().getId(), beltId);
+        ClassResponse dojoClass = directClass(f, "Criteria", ClassModality.GI);
+        TrainingSessionResponse session = action(ownerToken, createManual(ownerToken, dojoClass.id(), f.unit().getId(), "10:00", "11:00").id(), "open");
+        AttendanceResponse attendance = postAttendance(ownerToken, session.id(), student.getId(), AttendanceResponse.class).getBody();
+        String path = "/api/v1/students/" + student.getId() + "/graduation";
+        Map open = restTemplate.exchange(url(path), HttpMethod.GET, bearer(ownerToken), Map.class).getBody();
+        assertThat(((Map<?, ?>) open.get("eligibility")).get("eligible")).isEqualTo(false);
+        action(ownerToken, session.id(), "complete");
+        Map complete = restTemplate.exchange(url(path), HttpMethod.GET, bearer(ownerToken), Map.class).getBody();
+        assertThat(((Map<?, ?>) complete.get("eligibility")).get("eligible")).isEqualTo(true);
+        String studentToken = login(f.tenant().getSlug(), linked.getEmail());
+        Map graduation = restTemplate.exchange(url("/api/v1/student/me/graduation"), HttpMethod.GET, bearer(studentToken), Map.class).getBody();
+        Map current = (Map) graduation.get("current");
+        assertThat(((Map<?, ?>) current.get("criteria")).get("completedTrainings")).isEqualTo(1);
+        assertThat(current).doesNotContainKeys("eligibility", "reasons", "warnings");
+        assertThat((List<?>) graduation.get("history")).hasSize(1);
+        restTemplate.exchange(url("/api/v1/attendance/" + attendance.id() + "/void"), HttpMethod.POST, bearer(ownerToken, Map.of("reason", "Correction")), String.class);
+        Map voided = restTemplate.exchange(url(path), HttpMethod.GET, bearer(ownerToken), Map.class).getBody();
+        assertThat(((Map<?, ?>) voided.get("eligibility")).get("eligible")).isEqualTo(false);
     }
 
     private <T> ResponseEntity<T> postAttendance(String token, UUID sessionId, UUID studentId, Class<T> type) {
